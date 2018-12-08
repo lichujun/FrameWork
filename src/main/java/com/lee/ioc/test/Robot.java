@@ -8,11 +8,19 @@ package com.lee.ioc.test;
 public class Robot {
 
 
-    private Hand hand;
+    private Hand h;
     private Mouth mouth;
 
+    public Robot(Hand h) {
+        this.h = h;
+    }
+
+    public Robot() {
+
+    }
+
     public void show(){
-        hand.waveHand();
+        h.waveHand();
         mouth.speak();
     }
 }

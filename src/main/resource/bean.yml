@@ -2,9 +2,10 @@ bean:
     - name: robot
       className: com.lee.ioc.test.Robot
       constructorArgs:
-        - index: 1
-          ref: hand
+        - ref: hand
           className: com.lee.ioc.test.Hand
+        - ref: mouth
+          className: com.lee.ioc.test.Mouth
 
     - name: hand
       className: com.lee.ioc.test.Hand

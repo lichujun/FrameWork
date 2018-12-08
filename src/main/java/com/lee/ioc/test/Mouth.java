@@ -6,6 +6,6 @@ package com.lee.ioc.test;
  */
 public class Mouth {
     public void speak(){
-        System.out.println("say hello world");
+        System.out.println("大声说，world sucks");
     }
 }

@@ -5,7 +5,6 @@ package com.lee.ioc.test;
  * @date 2018/12/8 14:46
  */
 public class Hand {
-
     public void waveHand(){
         System.out.println("挥手告别");
     }

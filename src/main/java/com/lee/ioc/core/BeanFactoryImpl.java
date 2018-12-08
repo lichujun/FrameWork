@@ -1,7 +1,6 @@
 package com.lee.ioc.core;
 
 import com.lee.ioc.bean.BeanDefinition;
-import com.lee.ioc.bean.ConstructorArg;
 import com.lee.common.utils.ioc.BeanUtils;
 import com.lee.common.utils.ioc.ClassUtils;
 import com.lee.common.utils.exception.ExceptionUtils;
@@ -48,21 +47,20 @@ public class BeanFactoryImpl implements BeanFactory {
         return Optional.ofNullable(beanDefinition)
             .map(BeanDefinition::getClassName)
             .map(ExceptionUtils.handlerFunction(ClassUtils::loadClass))
-            .map(it ->
-                Optional.ofNullable(beanDefinition.getConstructorArgs())
-                    .filter(CollectionUtils::isNotEmpty)
-                    .map(ExceptionUtils.handlerFunction(args -> {
-                        List<Object> objects = new ArrayList<>();
-                        List<Class<?>> classList = new ArrayList<>();
-                        args.stream().sorted(Comparator.comparing(ConstructorArg::getIndex))
-                                .forEach(ExceptionUtils.handlerConsumer(arg -> {
-                                    objects.add(getBean(arg.getRef()));
-                                    classList.add(Class.forName(arg.getClassName()));
-                                }));
-                        return BeanUtils.instance(it, it.getConstructor(
-                                classList.toArray(new Class<?>[0])),
-                                objects.toArray());
-                    })).orElse(BeanUtils.instance(it, null, null))
+            .map(it -> Optional.of(beanDefinition)
+                .map(BeanDefinition::getConstructorArgs)
+                .filter(CollectionUtils::isNotEmpty)
+                .map(ExceptionUtils.handlerFunction(args -> {
+                    List<Object> objects = new ArrayList<>();
+                    List<Class<?>> classList = new ArrayList<>();
+                    args.forEach(ExceptionUtils.handlerConsumer(arg -> {
+                        objects.add(getBean(arg.getRef()));
+                        classList.add(Class.forName(arg.getClassName()));
+                    }));
+                    return BeanUtils.instance(it, it.getConstructor(
+                            classList.toArray(new Class<?>[0])),
+                            objects.toArray());
+                })).orElseGet(() -> BeanUtils.instance(it, null, null))
             ).orElse(null);
     }
 

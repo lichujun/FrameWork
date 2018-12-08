@@ -8,5 +8,10 @@ package com.lee.common.throwable;
 @FunctionalInterface
 public interface ThrowConsumer<T, E extends Exception> {
 
+    /**
+     * Consumer异常接口方法
+     * @param t T对象
+     * @throws E 异常
+     */
     void accept(T t) throws E;
 }

@@ -8,5 +8,10 @@ package com.lee.common.throwable;
 @FunctionalInterface
 public interface ThrowPredicate<T, E extends Exception> {
 
+    /**
+     * Predicate异常接口方法
+     * @param t T对象
+     * @return 通过T对象作判断
+     */
     boolean test(T t);
 }

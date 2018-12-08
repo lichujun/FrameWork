@@ -9,18 +9,15 @@ public class Robot {
 
 
     private Hand h;
-    private Mouth mouth;
+    private Mouth m;
 
-    public Robot(Hand h) {
+    public Robot(Hand h, Mouth m) {
         this.h = h;
-    }
-
-    public Robot() {
-
+        this.m = m;
     }
 
     public void show(){
         h.waveHand();
-        mouth.speak();
+        m.speak();
     }
 }

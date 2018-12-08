@@ -1,9 +1,11 @@
 package com.lee.ioc.core;
 
 import com.lee.ioc.bean.BeanDefinition;
-import com.lee.ioc.utils.BeanUtils;
-import com.lee.ioc.utils.ClassUtils;
-import com.lee.ioc.utils.ReflectionUtils;
+import com.lee.ioc.bean.ConstructorArg;
+import com.lee.common.utils.ioc.BeanUtils;
+import com.lee.common.utils.ioc.ClassUtils;
+import com.lee.common.utils.exception.ExceptionUtils;
+import com.lee.common.utils.ioc.ReflectionUtils;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -41,43 +43,45 @@ public class BeanFactoryImpl implements BeanFactory {
         BEAN_DEFINITION_MAP.put(beanDefinition.getName(), beanDefinition);
     }
 
-    /** 创建对象 */
+    /** 实例化对象 */
     private Object createBean(BeanDefinition beanDefinition) {
         return Optional.ofNullable(beanDefinition)
-                .map(BeanDefinition::getClassName)
-                .map(ClassUtils::loadClass)
-                .map(it ->
-                        Optional.ofNullable(beanDefinition.getConstructorArgs())
-                                .filter(CollectionUtils::isNotEmpty)
-                                .map(args -> {
-                                    List<Object> objects = new ArrayList<>();
-                                    args.forEach(arg -> objects.add(arg.getRef()));
-                                    try {
-                                        return BeanUtils.instance(it, it.getConstructor(),
-                                                objects.toArray());
-                                    } catch (NoSuchMethodException e) {
-                                        e.printStackTrace();
-                                        return null;
-                                    }
-                                }).orElse(BeanUtils.instance(it, null, null))
-                ).orElse(null);
+            .map(BeanDefinition::getClassName)
+            .map(ExceptionUtils.handlerFunction(ClassUtils::loadClass))
+            .map(it ->
+                Optional.ofNullable(beanDefinition.getConstructorArgs())
+                    .filter(CollectionUtils::isNotEmpty)
+                    .map(ExceptionUtils.handlerFunction(args -> {
+                        List<Object> objects = new ArrayList<>();
+                        List<Class<?>> classList = new ArrayList<>();
+                        args.stream().sorted(Comparator.comparing(ConstructorArg::getIndex))
+                                .forEach(ExceptionUtils.handlerConsumer(arg -> {
+                                    objects.add(getBean(arg.getRef()));
+                                    classList.add(Class.forName(arg.getClassName()));
+                                }));
+                        return BeanUtils.instance(it, it.getConstructor(
+                                classList.toArray(new Class<?>[0])),
+                                objects.toArray());
+                    })).orElse(BeanUtils.instance(it, null, null))
+            ).orElse(null);
     }
 
     /** 注入Field返回的对象 */
     private void populateBean(Object bean) {
         Optional.ofNullable(bean)
-                .map(Object::getClass)
-                .map(Class::getDeclaredFields)
-                .filter(ArrayUtils::isNotEmpty)
-                .ifPresent(fields -> {
-                    for (Field field : fields) {
-                        Optional.ofNullable(field)
-                                .map(Field::getName)
-                                .map(StringUtils::uncapitalize)
-                                .filter(BEAN_DEFINITION_MAP.keySet()::contains)
-                                .map(this::getBean)
-                                .ifPresent(it -> ReflectionUtils.injectField(field, bean, it));
-                    }
-                });
+            .map(Object::getClass)
+            .map(Class::getDeclaredFields)
+            .filter(ArrayUtils::isNotEmpty)
+            .ifPresent(fields -> {
+                for (Field field : fields) {
+                    Optional.ofNullable(field)
+                        .map(Field::getName)
+                        .map(StringUtils::uncapitalize)
+                        .filter(BEAN_DEFINITION_MAP.keySet()::contains)
+                        .map(this::getBean)
+                        .ifPresent(it ->
+                                ReflectionUtils.injectField(field, bean, it));
+                }
+            });
     }
 }

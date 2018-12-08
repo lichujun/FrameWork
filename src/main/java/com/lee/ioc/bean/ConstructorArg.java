@@ -11,9 +11,9 @@ import lombok.ToString;
 @ToString
 public class ConstructorArg {
 
-    private int index;
+    private Integer index;
 
     private String ref;
 
-    private String name;
+    private String className;
 }

@@ -19,8 +19,20 @@ public class BeanUtils {
         enhancer.setSuperclass(tClass);
         enhancer.setCallback(NoOp.INSTANCE);
         return Optional.ofNullable(ctr)
-                .map(it -> enhancer.create(ctr.getParameterTypes(),args))
+                .map(it -> enhancer.create(ctr.getParameterTypes(), args))
                 .orElse(enhancer.create());
-
     }
+
+    public static Object instance(Class<?> tClass, Constructor ctr, Object[] args) {
+        return Optional.ofNullable(tClass)
+                .map(it -> {
+                    try {
+                        return it.newInstance();
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                        return null;
+                    }
+                }).orElse(null);
+    }
+
 }

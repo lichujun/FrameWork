@@ -53,13 +53,13 @@ public class BeanFactoryImpl implements BeanFactory {
                                     List<Object> objects = new ArrayList<>();
                                     args.forEach(arg -> objects.add(arg.getRef()));
                                     try {
-                                        return BeanUtils.instanceByCglib(it, it.getConstructor(),
+                                        return BeanUtils.instance(it, it.getConstructor(),
                                                 objects.toArray());
                                     } catch (NoSuchMethodException e) {
                                         e.printStackTrace();
                                         return null;
                                     }
-                                }).orElse(BeanUtils.instanceByCglib(it, null, null))
+                                }).orElse(BeanUtils.instance(it, null, null))
                 ).orElse(null);
     }
 
@@ -67,7 +67,6 @@ public class BeanFactoryImpl implements BeanFactory {
     private void populateBean(Object bean) {
         Optional.ofNullable(bean)
                 .map(Object::getClass)
-                .map(Class::getSuperclass)
                 .map(Class::getDeclaredFields)
                 .filter(ArrayUtils::isNotEmpty)
                 .ifPresent(fields -> {

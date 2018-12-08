@@ -10,8 +10,10 @@ import java.util.Optional;
  */
 public class ReflectionUtils {
 
+    /** 将obj对象的field的值改为value */
     public static void injectField(Field field, Object obj, Object value) {
         Optional.ofNullable(field).ifPresent(it -> {
+            // 设置为可以修改private的field变量
             it.setAccessible(true);
             try {
                 it.set(obj, value);

@@ -7,6 +7,7 @@ package com.lee.ioc.utils;
  */
 public class ClassUtils {
 
+    /** 通过类名获取Class对象 */
     public static Class<?> loadClass(String className) {
         try {
             return Class.forName(className);

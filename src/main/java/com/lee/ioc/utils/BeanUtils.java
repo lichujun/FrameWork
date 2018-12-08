@@ -14,12 +14,13 @@ import java.util.Optional;
 public class BeanUtils {
 
     /** 通过cglib实例化对象 */
-    public static <T> T instanceByCglib(Class<T> tClass, Constructor ctr, Object[] args) {
+    public static Object instanceByCglib(Class<?> tClass, Constructor ctr, Object[] args) {
         Enhancer enhancer = new Enhancer();
         enhancer.setSuperclass(tClass);
         enhancer.setCallback(NoOp.INSTANCE);
         return Optional.ofNullable(ctr)
-                .map(it -> tClass.cast(enhancer.create()))
-                .orElse(tClass.cast(enhancer.create(ctr.getParameterTypes(),args)));
+                .map(it -> enhancer.create(ctr.getParameterTypes(),args))
+                .orElse(enhancer.create());
+
     }
 }

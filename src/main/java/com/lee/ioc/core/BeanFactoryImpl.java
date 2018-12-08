@@ -37,13 +37,14 @@ public class BeanFactoryImpl implements BeanFactory {
     }
 
     /** 注册对象 */
-    protected void registerBean(String name, BeanDefinition beanDefinition) {
-        BEAN_DEFINITION_MAP.put(name, beanDefinition);
+    void registerBean(BeanDefinition beanDefinition) {
+        BEAN_DEFINITION_MAP.put(beanDefinition.getName(), beanDefinition);
     }
 
     /** 创建对象 */
     private Object createBean(BeanDefinition beanDefinition) {
-        return Optional.ofNullable(beanDefinition.getName())
+        return Optional.ofNullable(beanDefinition)
+                .map(BeanDefinition::getClassName)
                 .map(ClassUtils::loadClass)
                 .map(it ->
                         Optional.ofNullable(beanDefinition.getConstructorArgs())

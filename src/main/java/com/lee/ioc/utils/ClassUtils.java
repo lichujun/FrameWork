@@ -7,13 +7,9 @@ package com.lee.ioc.utils;
  */
 public class ClassUtils {
 
-    private static ClassLoader getDefaultClassLoader() {
-        return Thread.currentThread().getContextClassLoader();
-    }
-
     public static Class<?> loadClass(String className) {
         try {
-            return getDefaultClassLoader().loadClass(className);
+            return Class.forName(className);
         } catch (Exception e) {
             e.printStackTrace();
         }

@@ -16,8 +16,10 @@ public class BeanUtils {
     public static Object instance(Class<?> tClass, Constructor ctr, Object[] args) {
         return Optional.ofNullable(tClass)
                 .map(it -> Optional.ofNullable(ctr)
+                        // 反射通过构造函数实例化对象
                         .map(ExceptionUtils.handlerFunction(constructor ->
                                 constructor.newInstance(args)))
+                        // 反射通过类对象实例化对象
                         .orElseGet(ExceptionUtils.handleSupplier(it::newInstance)))
                 .orElse(null);
     }

@@ -76,7 +76,7 @@ public class AnnotationAppContext extends BeanFactoryImpl {
             // 不扫描没有@Component注解的类
             .filter(it -> it.getDeclaredAnnotation(Component.class) != null)
             .map(it -> Optional.of(it)
-                // 过滤有多个构造方法并且要注入成组件的类，报错
+                // 过滤有多个构造方法并且要注入成组件的类，否则报错
                 .filter(local -> local.getDeclaredConstructors().length == 1)
                 .orElseGet(() -> {
                     throw new RuntimeException("实例不能存在多个构造方法");
@@ -87,31 +87,39 @@ public class AnnotationAppContext extends BeanFactoryImpl {
                     .map(local -> local.getDeclaredAnnotation(Component.class))
                     // 读取@Component注解的值
                     .map(Component::value)
+                    // 获取注入实例的名称
                     .map(beanName -> Optional.of(beanName)
                             .filter(StringUtils::isNotBlank)
                             .orElseGet(() -> StringUtils.uncapitalize(originClass.getSimpleName())))
                     .map(beanName ->
                             Optional.of(originClass)
+                            // 获取构造函数列表
                             .map(Class::getDeclaredConstructors)
+                            // 获取唯一的构造函数
                             .map(cons -> cons[0])
+                            // 获取构造函数的参数列表
                             .map(Constructor::getParameters)
                             .filter(ArrayUtils::isNotEmpty)
                             .map(parameters -> {
+                                // 获取构造函数的参数和注入的值
                                 List<ConstructorArg> constructorArgs = new ArrayList<>();
                                 Stream.of(parameters).forEach(parameter -> {
+                                    // 获取注入实例的名称，构造函数里的所有参数都需@Resource注入实例
                                     String annotationValue = Optional.ofNullable(parameter)
-                                            .map(p -> p.getDeclaredAnnotation(Resource.class))
-                                            .map(Resource::value)
-                                            .orElseGet(() -> {
-                                                throw new RuntimeException("构造函数的参数必须使用@Resource");
-                                            });
+                                        .map(p -> p.getDeclaredAnnotation(Resource.class))
+                                        .map(Resource::value)
+                                        .orElseGet(() -> {
+                                            throw new RuntimeException("构造函数的参数必须使用@Resource");
+                                        });
                                     String value = StringUtils.isNotBlank(annotationValue) ? annotationValue
                                             : StringUtils.uncapitalize(parameter.getType().getSimpleName());
+                                    // 获取构造函数参数的类名
                                     String className = parameter.getParameterizedType().getTypeName();
                                     constructorArgs.add(new ConstructorArg(value, className));
                                 });
                                 return constructorArgs;
                             })
+                            // 创建BeanDefinition对象以用来注册实例
                             .map(cons -> new BeanDefinition(beanName, originClass.getName(),
                                     null, cons))
                             .orElseGet(() -> new BeanDefinition(beanName, originClass.getName(),
@@ -125,20 +133,26 @@ public class AnnotationAppContext extends BeanFactoryImpl {
     private void processFieldResource(Class<?> tClass) {
         Optional.ofNullable(tClass)
             .filter(it -> it.getDeclaredAnnotation(Component.class) != null)
+            // 获取Field参数列表
             .map(Class::getDeclaredFields)
             .ifPresent(fields -> {
                 for (Field field : fields) {
                     Optional.ofNullable(field)
+                        // 获取Field参数注入的值
                         .map(it -> it.getDeclaredAnnotation(Resource.class))
                         .map(Resource::value)
+                        // 获取注入实例的名称
                         .map(fieldBeanName -> StringUtils.isNotBlank(fieldBeanName) ? fieldBeanName
                                 : StringUtils.uncapitalize(field.getName()))
                         .ifPresent(fieldBeanName ->
                             Optional.ofNullable(processComponent(tClass))
                                 .map(BeanDefinition::getName)
                                 .ifPresent(beanName -> {
+                                    // 获取当前对象
                                     Object obj = getBean(beanName);
+                                    // 获取当前对象的参数所注入的对象
                                     Object value = getBean(fieldBeanName);
+                                    // 修改当前对象Field参数的值
                                     ReflectionUtils.injectField(field, obj, value);
                                 })
                         );

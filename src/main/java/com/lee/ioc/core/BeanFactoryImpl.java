@@ -38,10 +38,13 @@ public class BeanFactoryImpl implements BeanFactory {
     public <T> T getBean(Class<T> tClass) {
         return Optional.ofNullable(tClass)
             .map(it ->
+                // 获取当前类注入的值
                 Optional.ofNullable(it.getDeclaredAnnotation(Component.class))
                     .map(Component::value)
+                    // 获取注入实例的名称
                     .map(value -> StringUtils.isNotBlank(value) ? value
                             : StringUtils.uncapitalize(it.getSimpleName()))
+                    // 获取实例
                     .map(this::getBean)
                     .map(it::cast)
                     .orElse(null))

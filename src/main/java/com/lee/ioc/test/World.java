@@ -1,4 +1,4 @@
-package com.lee.ioc.test.annotation;
+package com.lee.ioc.test;
 
 import com.lee.ioc.annotation.Component;
 import com.lee.ioc.annotation.Resource;
@@ -10,10 +10,14 @@ import com.lee.ioc.annotation.Resource;
 @Component
 public class World {
 
-    @Resource
+    @Resource("test")
     private Hello hello;
 
     public void doSomething() {
         hello.sayHello();
+    }
+
+    public void doOther() {
+        System.out.println("大声说，请大声说：");
     }
 }

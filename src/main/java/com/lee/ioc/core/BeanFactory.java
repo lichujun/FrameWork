@@ -13,9 +13,9 @@ public interface BeanFactory {
     Object getBean(String name);
 
     /**
-     * yaml配置形式通过类名称获取实例
-     * @param name 类名称
+     * 注解形式通过类对象获取实例
+     * @param tClass 类对象
      * @return 对象实例
      */
-    Object getBeanForYaml(String name);
+    <T> T getBean(Class<T> tClass);
 }

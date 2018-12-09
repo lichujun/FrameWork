@@ -1,13 +1,12 @@
 package com.lee.ioc.core;
 
+import com.lee.ioc.annotation.Component;
 import com.lee.ioc.bean.BeanDefinition;
 import com.lee.common.utils.ioc.BeanUtils;
 import com.lee.common.utils.ioc.ClassUtils;
 import com.lee.common.utils.exception.ExceptionUtils;
-import com.lee.common.utils.ioc.ReflectionUtils;
 import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.lang3.ArrayUtils;
-import java.lang.reflect.Field;
+import org.apache.commons.lang3.StringUtils;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -19,9 +18,9 @@ import java.util.concurrent.ConcurrentHashMap;
 public class BeanFactoryImpl implements BeanFactory {
 
     /** 存放对象的容器 */
-    private static final Map<String, Object> BEAN_MAP = new ConcurrentHashMap<>();
+    private static Map<String, Object> BEAN_MAP = new ConcurrentHashMap<>();
     /** 存放对象数据结构的映射的容器 */
-    private static final Map<String, BeanDefinition> BEAN_DEFINITION_MAP = new ConcurrentHashMap<>();
+    private static Map<String, BeanDefinition> BEAN_DEFINITION_MAP = new ConcurrentHashMap<>();
 
     @Override
     public Object getBean(String name) {
@@ -36,22 +35,25 @@ public class BeanFactoryImpl implements BeanFactory {
     }
 
     @Override
-    public Object getBeanForYaml(String name) {
-        return Optional.ofNullable(BEAN_MAP.get(name))
-                .orElseGet(() -> Optional.ofNullable(createBean(BEAN_DEFINITION_MAP.get(name)))
-                        .map(it ->{
-                            // 对象创建成功后，注入对象所需要的参数
-                            populateBean(it);
-                            // 再把对象存入Map中
-                            BEAN_MAP.put(name, it);
-                            return it;
-                        }).orElse(null)
-                );
+    public <T> T getBean(Class<T> tClass) {
+        return Optional.ofNullable(tClass)
+            .map(it ->
+                Optional.ofNullable(it.getDeclaredAnnotation(Component.class))
+                    .map(Component::value)
+                    .map(value -> StringUtils.isNotBlank(value) ? value
+                            : StringUtils.uncapitalize(it.getSimpleName()))
+                    .map(this::getBean)
+                    .map(it::cast)
+                    .orElse(null))
+            .orElse(null);
     }
 
     /** 注册对象 */
     void registerBean(BeanDefinition beanDefinition) {
-        BEAN_DEFINITION_MAP.put(beanDefinition.getName(), beanDefinition);
+        Optional.ofNullable(beanDefinition)
+                .filter(it -> StringUtils.isNotBlank(it.getName()))
+                .filter(it -> StringUtils.isNotBlank(it.getClassName()))
+                .ifPresent(it -> BEAN_DEFINITION_MAP.put(it.getName(), it));
     }
 
     /** 实例化对象 */
@@ -82,27 +84,5 @@ public class BeanFactoryImpl implements BeanFactory {
                 // 通过Class对象实例化对象
                 .orElseGet(() -> BeanUtils.instance(it, null, null))
             ).orElse(null);
-    }
-
-    /** 注入Field返回的对象 */
-    private void populateBean(Object bean) {
-        Optional.ofNullable(bean)
-            // 获取已经实例化的对象的Class对象
-            .map(Object::getClass)
-            // 获取已经实例化的对象的所有Field参数
-            .map(Class::getDeclaredFields)
-            // 过滤Field参数为空的实例化对象
-            .filter(ArrayUtils::isNotEmpty)
-            // Field参数列表不为空时，注入Field参数
-            .ifPresent(fields -> {
-                for (Field field : fields) {
-                    Optional.ofNullable(field)
-                        .map(Field::getName)
-                        .filter(BEAN_DEFINITION_MAP.keySet()::contains)
-                        .map(this::getBean)
-                        .ifPresent(it ->
-                                ReflectionUtils.injectField(field, bean, it));
-                }
-            });
     }
 }

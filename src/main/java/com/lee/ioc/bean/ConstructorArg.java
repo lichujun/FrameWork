@@ -14,4 +14,9 @@ public class ConstructorArg {
     private String ref;
 
     private String className;
+
+    public ConstructorArg(String ref, String className) {
+        this.ref = ref;
+        this.className = className;
+    }
 }

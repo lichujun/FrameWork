@@ -1,7 +1,7 @@
 package com.lee.ioc;
 
 import com.lee.ioc.core.AnnotationAppContext;
-import com.lee.ioc.test.annotation.World;
+import com.lee.ioc.test.HelloWorld;
 
 /**
  * @author lichujun
@@ -12,7 +12,8 @@ public class AnnotationApplication {
     public static void main(String[] args) {
         AnnotationAppContext context = new AnnotationAppContext("scan.yml");
         context.init();
-        World world = (World) context.getBean("world");
+        HelloWorld world = context.getBean(HelloWorld.class);
+        world.doOther();
         world.doSomething();
     }
 }

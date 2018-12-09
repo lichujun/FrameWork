@@ -20,16 +20,14 @@ public class BeanDefinition {
     private List<String> interfaces;
     /** 构造函数的传参 */
     private List<ConstructorArg> constructorArgs;
-    /** 注入的参数列表 */
-    private List<PropertyArg> propertyArg;
 
     public BeanDefinition() {}
 
-    public BeanDefinition(String name, String className, List<String> interfaces, List<ConstructorArg> constructorArgs, List<PropertyArg> propertyArg) {
+    public BeanDefinition(String name, String className, List<String> interfaces,
+                          List<ConstructorArg> constructorArgs) {
         this.name = name;
         this.className = className;
         this.interfaces = interfaces;
         this.constructorArgs = constructorArgs;
-        this.propertyArg = propertyArg;
     }
 }

@@ -1,4 +1,4 @@
-package com.lee.ioc.test;
+package com.lee.ioc.test.yaml;
 
 /**
  * @author lichujun

@@ -1,14 +1,14 @@
 bean:
     - name: robot
-      className: com.lee.ioc.test.Robot
+      className: com.lee.ioc.test.yaml.Robot
       constructorArgs:
         - ref: hand
-          className: com.lee.ioc.test.Hand
+          className: com.lee.ioc.test.yaml.Hand
         - ref: mouth
-          className: com.lee.ioc.test.Mouth
+          className: com.lee.ioc.test.yaml.Mouth
 
     - name: hand
-      className: com.lee.ioc.test.Hand
+      className: com.lee.ioc.test.yaml.Hand
 
     - name: mouth
-      className: com.lee.ioc.test.Mouth
+      className: com.lee.ioc.test.yaml.Mouth

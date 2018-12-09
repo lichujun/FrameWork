@@ -6,14 +6,15 @@ import org.yaml.snakeyaml.Yaml;
 import java.util.Optional;
 
 /**
+ * yaml依赖注入
  * @author lichujun
  * @date 2018/12/8 14:35
  */
-public class ApplicationContext extends BeanFactoryImpl {
+public class YamlAppContext extends BeanFactoryImpl {
 
     private String fileName;
 
-    public ApplicationContext(String fileName) {
+    public YamlAppContext(String fileName) {
         this.fileName = fileName;
     }
 
@@ -21,12 +22,16 @@ public class ApplicationContext extends BeanFactoryImpl {
         loadFile();
     }
 
+    /** 加载yaml文件，并进行依赖注入 */
     private void loadFile() {
         Yaml yaml = new Yaml();
         Optional.ofNullable(fileName)
                 .filter(StringUtils::isNotBlank)
+                // 将yaml文件转换到流
                 .map(f -> Thread.currentThread().getContextClassLoader().getResourceAsStream(f))
+                // 加载yaml文件
                 .map(is -> yaml.loadAs(is, Bean.class))
+                // 注册到容器
                 .ifPresent(bean -> bean.getBean().forEach(this::registerBean));
     }
 }

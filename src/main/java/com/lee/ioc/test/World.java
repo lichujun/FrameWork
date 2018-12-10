@@ -8,13 +8,14 @@ import com.lee.ioc.annotation.Resource;
  * @date 2018/12/9 10:37 AM
  */
 @Component
-public class World {
+public class World implements IHello {
 
-    @Resource("test")
+    @Resource
     private Hello hello;
 
+    @Override
     public void doSomething() {
-        hello.sayHello();
+        hello.doSomething();
     }
 
     public void doOther() {

@@ -9,11 +9,11 @@ import com.lee.ioc.annotation.Resource;
  */
 @Component
 public class HelloWorld {
-    private final Hello hello;
+    @Resource("test")
+    private IHello hello;
     private final World world;
 
-    public HelloWorld(@Resource World world, @Resource("test") Hello hello) {
-        this.hello = hello;
+    public HelloWorld(@Resource World world) {
         this.world = world;
     }
 
@@ -22,6 +22,6 @@ public class HelloWorld {
     }
 
     public void doSomething() {
-        hello.sayHello();
+        hello.doSomething();
     }
 }

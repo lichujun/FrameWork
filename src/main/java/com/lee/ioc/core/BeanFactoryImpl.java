@@ -21,6 +21,8 @@ public class BeanFactoryImpl implements BeanFactory {
     private static Map<String, Object> BEAN_MAP = new ConcurrentHashMap<>();
     /** 存放对象数据结构的映射的容器 */
     private static Map<String, BeanDefinition> BEAN_DEFINITION_MAP = new ConcurrentHashMap<>();
+    /** 存放接口的实现对应关系 */
+    private static Map<String, Set<String>> INTERFACE_MAP = new ConcurrentHashMap<>();
 
     @Override
     public Object getBean(String name) {
@@ -51,12 +53,60 @@ public class BeanFactoryImpl implements BeanFactory {
             .orElse(null);
     }
 
+    /**
+     * 获取接口的所有实现
+     * @param interfaceName 接口名称
+     * @return 接口实现的bean名称
+     */
+    @Override
+    public Set<String> getInterfaceImpl(String interfaceName) {
+        return Optional.ofNullable(interfaceName)
+                .map(it -> INTERFACE_MAP.get(interfaceName))
+                .orElse(null);
+    }
+
     /** 注册对象 */
-    void registerBean(BeanDefinition beanDefinition) {
+    @Override
+    public void registerBean(BeanDefinition beanDefinition) {
         Optional.ofNullable(beanDefinition)
-                .filter(it -> StringUtils.isNotBlank(it.getName()))
-                .filter(it -> StringUtils.isNotBlank(it.getClassName()))
-                .ifPresent(it -> BEAN_DEFINITION_MAP.put(it.getName(), it));
+            // 过滤没有bean名称或类名的BeanDefinition
+            .filter(it -> StringUtils.isNotBlank(it.getName()))
+            .filter(it -> StringUtils.isNotBlank(it.getClassName()))
+            .filter(it -> BEAN_DEFINITION_MAP.put(it.getName(), it) == null)
+            .orElseGet(() -> {
+                throw new RuntimeException("存在相同的bean名称");
+            });
+    }
+
+    /**
+     * 注册接口的所有实现
+     * @param beanName bean名称
+     * @param interfaces 实现的接口
+     */
+    @Override
+    public void registerInterfaceImpl(String beanName, Set<String> interfaces) {
+        Optional.ofNullable(interfaces)
+            .filter(implSet -> StringUtils.isNotBlank(beanName) && CollectionUtils.isNotEmpty(implSet))
+            .ifPresent(implSet ->
+                    implSet.forEach(imp ->
+                        Optional.ofNullable(imp)
+                            .filter(StringUtils::isNotBlank)
+                            .ifPresent(i ->  Optional.ofNullable(INTERFACE_MAP.get(i))
+                                .filter(CollectionUtils::isNotEmpty)
+                                .map(impSet -> {
+                                    Optional.of(impSet)
+                                            .filter(set -> set.add(beanName))
+                                            .orElseGet(() -> {
+                                                throw new RuntimeException("存在相同的bean名称");
+                                            });
+                                    return impSet;
+                                }).orElseGet(() -> {
+                                    Set<String> impSet = new HashSet<>();
+                                    impSet.add(beanName);
+                                    // 存放到接口实现容器
+                                    INTERFACE_MAP.put(imp, impSet);
+                                    return null;
+                                }))));
     }
 
     /** 实例化对象 */

@@ -63,7 +63,7 @@ public class AnnotationAppContext extends BeanFactoryImpl {
                 .ifPresent(classSet -> {
                     classSet.forEach(tClass -> Optional.ofNullable(tClass)
                             .filter(it -> it.getInterfaces().length > 0)
-                            // 有@Component组件的才将接口和bean存放在容器中
+                            // 有@Component组件的才将接口和bean的关系注册到容器中
                             .map(it -> it.getDeclaredAnnotation(Component.class))
                             .ifPresent(it -> {
                                 String beanName = getValue(tClass, it);

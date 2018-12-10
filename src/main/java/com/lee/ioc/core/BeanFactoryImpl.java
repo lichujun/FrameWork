@@ -72,10 +72,15 @@ public class BeanFactoryImpl implements BeanFactory {
             // 过滤没有bean名称或类名的BeanDefinition
             .filter(it -> StringUtils.isNotBlank(it.getName()))
             .filter(it -> StringUtils.isNotBlank(it.getClassName()))
-            .filter(it -> BEAN_DEFINITION_MAP.put(it.getName(), it) == null)
-            .orElseGet(() -> {
-                throw new RuntimeException("存在相同的bean名称");
-            });
+            .ifPresent(beanDef ->
+                Optional.of(beanDef)
+                    .filter(it -> BEAN_DEFINITION_MAP.put(it.getName(), it) == null)
+                    .orElseGet(() -> {
+                        throw new RuntimeException(String.format("存在多个相同的bean名称：%s",
+                                beanDefinition.getName()));
+                    })
+            )
+            ;
     }
 
     /**
@@ -97,7 +102,8 @@ public class BeanFactoryImpl implements BeanFactory {
                                     Optional.of(impSet)
                                             .filter(set -> set.add(beanName))
                                             .orElseGet(() -> {
-                                                throw new RuntimeException("存在相同的bean名称");
+                                                throw new RuntimeException(String.format(
+                                                        "存在多个相同的bean名称：%s", beanName));
                                             });
                                     return impSet;
                                 }).orElseGet(() -> {

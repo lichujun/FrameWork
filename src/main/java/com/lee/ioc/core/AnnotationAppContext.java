@@ -211,7 +211,8 @@ public class AnnotationAppContext extends BeanFactoryImpl {
      * @param cons 构造函数参数列表
      * @return BeanDefinition
      */
-    private BeanDefinition createBeanDefinition(String beanName, Class<?> tClass, List<ConstructorArg> cons) {
+    private BeanDefinition createBeanDefinition(String beanName, Class<?> tClass,
+                                                List<ConstructorArg> cons) {
         List<String> interfaceList =  Optional.ofNullable(tClass)
                 // 获取类实现的所有接口
                 .map(Class::getInterfaces)
@@ -219,14 +220,17 @@ public class AnnotationAppContext extends BeanFactoryImpl {
                 .map(list -> Stream.of(list)
                         .map(Class::getName).collect(Collectors.toList()))
                 .orElse(null);
-        return new BeanDefinition(beanName, tClass.getName(), interfaceList, cons);
+        return Optional.ofNullable(tClass)
+                .map(it -> new BeanDefinition(beanName, it.getName(), interfaceList, cons))
+                .orElse(null);
     }
 
     /** 获取@Component注入bean的名称 */
     private String getValue(Class<?> tClass, Component component) {
         return Optional.ofNullable(component)
                 .map(Component::value)
-                .map(value -> StringUtils.isNotBlank(value) ? value : StringUtils.uncapitalize(tClass.getSimpleName()))
+                .map(value -> StringUtils.isNotBlank(value) ? value :
+                        StringUtils.uncapitalize(tClass.getSimpleName()))
                 .orElseGet(() -> {
                     throw new RuntimeException("注入组件未标注注解");
                 });

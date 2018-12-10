@@ -125,10 +125,17 @@ public class BeanFactoryImpl implements BeanFactory {
                     List<Object> objects = new ArrayList<>();
                     List<Class<?>> classList = new ArrayList<>();
                     // 将参数类型和参数放入到list集合中，方便转换成数组结构
-                    args.forEach(ExceptionUtils.handlerConsumer(arg -> {
-                        objects.add(getBean(arg.getRef()));
-                        classList.add(Class.forName(arg.getClassName()));
-                    }));
+                    args.forEach(ExceptionUtils.handlerConsumer(arg ->
+                        Optional.ofNullable(getBean(arg.getRef()))
+                                .map(ExceptionUtils.handlerFunction(bean -> {
+                                    objects.add(bean);
+                                    classList.add(Class.forName(arg.getClassName()));
+                                    return bean;
+                                })).orElseGet(() -> {
+                                    throw new RuntimeException(String.format(
+                                            "不存在名称为%s的bean", arg.getRef()));
+                                })
+                    ));
                     // 构造函数实例化对象
                     return BeanUtils.instance(it, it.getConstructor(
                             classList.toArray(new Class<?>[0])),

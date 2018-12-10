@@ -77,6 +77,11 @@ public class AnnotationAppContext extends BeanFactoryImpl {
                     });
                     // 将@Resource依赖注入到Field
                     classSet.forEach(this::processFieldResource);
+                    // 加载所有bean
+                    classSet.forEach(tClass -> Optional.ofNullable(tClass)
+                            .filter(it -> it.getDeclaredAnnotation(Component.class) != null)
+                            .ifPresent(this::getBean)
+                    );
                 });
     }
 
@@ -170,12 +175,13 @@ public class AnnotationAppContext extends BeanFactoryImpl {
                                             return it;
                                         }).orElseGet(() -> {
                                             Optional.of(fieldClass)
-                                                .map(it -> getValue(fieldClass, fieldClass.getDeclaredAnnotation(Component.class)))
+                                                .map(it -> getValue(fieldClass,
+                                                        fieldClass.getDeclaredAnnotation(Component.class)))
                                                 .ifPresent(fieldBeanName ->
                                                         injectField(tClass, fieldBeanName, field)
                                                 );
                                             return null;
-                                    })
+                                        })
                                 );
                             return resource;
                         });
@@ -221,7 +227,15 @@ public class AnnotationAppContext extends BeanFactoryImpl {
                     // 获取当前对象的参数所注入的对象
                     Object value = getBean(fieldBeanName);
                     // 修改当前对象Field参数的值
-                    ReflectionUtils.injectField(field, obj, value);
+                    Optional.of(obj != null && value != null)
+                            .filter(it -> it)
+                            .map(it ->  {
+                                ReflectionUtils.injectField(field, obj, value);
+                                return true;
+                            }).orElseGet(() -> {
+                                throw new RuntimeException(String.format(
+                                        "不存在名称为%s的bean", fieldBeanName));
+                            });
                 });
     }
 }

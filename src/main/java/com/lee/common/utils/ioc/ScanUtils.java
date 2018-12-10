@@ -1,5 +1,6 @@
 package com.lee.common.utils.ioc;
 
+import com.lee.common.utils.exception.ExceptionUtils;
 import lombok.Getter;
 import org.apache.commons.collections4.EnumerationUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -33,24 +34,29 @@ public class ScanUtils {
     private static final String FOLDER_SEPARATOR = "/";
 
     /**
-     * 递归地在类路径中以指定的类加载器获取 dirPath 指定的目录下面所有的资源
+     * 递归地在类路径中以指定的类加载器获取 dirPath 指定的目录下面所有的资源。cl 可为空，为空时取系统类加载器。
      * 返回值一定不为 null。
      */
     private static ClassPathResource[] getClassPathResources(String dirPath, ClassLoader cl) throws IOException {
         URL[] roots = getRoots(dirPath, cl);
         Set<ClassPathResource> result = new LinkedHashSet<>(16);
         for (URL root : roots) {
-            if (isJarResource(root)) {
-                result.addAll(doFindPathMatchingJarResources(root));
-            } else {
+            Optional.of(isJarResource(root))
+                    .filter(it -> it)
+                    .map(ExceptionUtils.handlerFunction(it -> {
+                        result.addAll(doFindPathMatchingJarResources(root));
+                        return it;
+                    })).orElseGet(ExceptionUtils.handleSupplier(() -> {
                 result.addAll(doFindPathMatchingFileResources(root, dirPath));
-            }
+                return null;
+            }));
         }
         return result.toArray(new ClassPathResource[0]);
     }
 
     /**
-     * 获取指定 basePackages
+     * 获取指定 basePackages 下面所有能用 classLoaders 加载的类。
+     *
      * @param basePackages 这些包下面的类会被扫描
      * @return 能够扫描到的类
      */
@@ -65,20 +71,22 @@ public class ScanUtils {
 
     /**
      * 使用 cl 指定的类加载器递归加载 packageName 指定的包名下面的所有的类。不会返回 null。
+     * cl 为空时使用系统类加载器。返回值一定不为 null。返回值中不包含类路径中的内部类。
      */
     private static Set<Class<?>> getClasses(String packageName) throws IOException {
         ClassLoader cl = Thread.currentThread().getContextClassLoader();
-        ClassPathResource[] resources = getClassPathResources(StringUtils.replace(packageName, ".", "/"), cl);
+        ClassPathResource[] resources = getClassPathResources(StringUtils.replace(packageName,
+                ".", "/"), cl);
         Set<Class<?>> result = new HashSet<>();
         for (ClassPathResource resource : resources) {
             String urlPath = resource.getUrl().getPath();
-            if (!urlPath.endsWith(".class") || urlPath.contains("$")) {
-                continue;
-            }
-            Class<?> cls = resolveClass(cl, resource);
-            if (cls != null) {
-                result.add(cls);
-            }
+            Optional.ofNullable(urlPath)
+                    .filter(it -> it.endsWith(".class") || !it.contains("$"))
+                    .ifPresent(it -> {
+                        Class<?> cls = resolveClass(cl, resource);
+                        Optional.ofNullable(cls)
+                                .ifPresent(result::add);
+                    });
         }
         return result;
     }
@@ -133,22 +141,22 @@ public class ScanUtils {
         String absolutePath = rootDir.getAbsolutePath();
         absolutePath = StringUtils.replace(absolutePath, "\\", "/");
         int lastIndex = absolutePath.lastIndexOf(dirPath);
-        String result = absolutePath.substring(0, lastIndex);
-        if (!result.endsWith(FOLDER_SEPARATOR)) {
-            result = result + FOLDER_SEPARATOR;
-        }
-        return result;
+        return Optional.of(absolutePath.substring(0, lastIndex))
+                .map(res -> Optional.of(res)
+                        .filter(it -> !it.endsWith(FOLDER_SEPARATOR))
+                        .map(it -> it + FOLDER_SEPARATOR)
+                        .orElse(res)
+                ).get();
     }
 
     private static void retrieveAllFiles(File dir, Set<File> allFiles) {
         File[] subFiles = dir.listFiles();
         assert subFiles != null;
         allFiles.addAll(Arrays.asList(subFiles));
-
         for (File subFile : subFiles) {
-            if (subFile.isDirectory()) {
-                retrieveAllFiles(subFile, allFiles);
-            }
+            Optional.ofNullable(subFile)
+                    .filter(File::isDirectory)
+                    .ifPresent(it -> retrieveAllFiles(it, allFiles));
         }
     }
 
@@ -179,53 +187,60 @@ public class ScanUtils {
         }
 
         try {
-            if (!"".equals(rootEntryPath) && !rootEntryPath.endsWith(FOLDER_SEPARATOR)) {
-                rootEntryPath = rootEntryPath + "/";
-            }
+            rootEntryPath = Optional.ofNullable(rootEntryPath)
+                    .filter(it -> !"".equals(it))
+                    .filter(it -> !it.endsWith(FOLDER_SEPARATOR))
+                    .map(it -> it + FOLDER_SEPARATOR)
+                    .orElse(rootEntryPath);
             Set<ClassPathResource> result = new LinkedHashSet<>(8);
             for (Enumeration<JarEntry> entries = jarFile.entries(); entries.hasMoreElements();) {
                 JarEntry entry = entries.nextElement();
                 String entryPath = entry.getName();
-                if (entryPath.startsWith(rootEntryPath)) {
-                    String relativePath = entryPath.substring(rootEntryPath.length());
-                    String rootPath = rootUrl.getPath();
-                    rootPath = rootPath.endsWith(FOLDER_SEPARATOR) ? rootPath : rootPath +FOLDER_SEPARATOR;
-                    String newPath = applyRelativePath(rootPath, relativePath);
-                    String classPathPath = applyRelativePath(rootEntryPath, relativePath);
-                    result.add(new ClassPathResource(new URL(newPath), classPathPath));
-                }
+                Optional.ofNullable(rootEntryPath)
+                        .filter(entryPath::startsWith)
+                        .ifPresent(ExceptionUtils.handlerConsumer(it -> {
+                            String relativePath = entryPath.substring(it.length());
+                            String rootPath = rootUrl.getPath();
+                            rootPath = rootPath.endsWith(FOLDER_SEPARATOR) ? rootPath
+                                    : rootPath +FOLDER_SEPARATOR;
+                            String newPath = applyRelativePath(rootPath, relativePath);
+                            String classPathPath = applyRelativePath(it, relativePath);
+                            result.add(new ClassPathResource(new URL(newPath), classPathPath));
+                        }));
             }
             return result;
         } finally {
-            if (newJarFile) {
-                jarFile.close();
-            }
+            Optional.of(newJarFile)
+                    .filter(it -> it)
+                    .ifPresent(ExceptionUtils.handlerConsumer(it ->
+                            jarFile.close()));
         }
     }
 
     private static String applyRelativePath(String path, String relativePath) {
-        int separatorIndex = path.lastIndexOf(FOLDER_SEPARATOR);
-        if (separatorIndex != -1) {
-            String newPath = path.substring(0, separatorIndex);
-            if (!relativePath.startsWith(FOLDER_SEPARATOR)) {
-                newPath += FOLDER_SEPARATOR;
-            }
-            return newPath + relativePath;
-        } else {
-            return relativePath;
-        }
+        return Optional.of(path.lastIndexOf(FOLDER_SEPARATOR))
+                .filter(it -> it != -1)
+                .map(it -> Optional.of(it)
+                        .map(index -> path.substring(0, index))
+                        .map(newPath -> Optional.of(newPath)
+                                .filter(local -> !relativePath.startsWith(FOLDER_SEPARATOR))
+                                .map(local -> local + FOLDER_SEPARATOR)
+                                .orElseGet(() -> newPath + relativePath)
+                        ).get()
+                ).orElse(relativePath);
     }
 
-    private static JarFile getJarFile(String jarFileUrl) throws IOException {
-        if (jarFileUrl.startsWith(FILE_URL_PREFIX)) {
-            try {
-                return new JarFile(toURI(jarFileUrl).getSchemeSpecificPart());
-            } catch (URISyntaxException ex) {
-                return new JarFile(jarFileUrl.substring(FILE_URL_PREFIX.length()));
-            }
-        } else {
-            return new JarFile(jarFileUrl);
-        }
+    private static JarFile getJarFile(String jarFileUrl) {
+        return Optional.ofNullable(jarFileUrl)
+                .filter(it -> it.startsWith(FILE_URL_PREFIX))
+                .map(ExceptionUtils.handlerFunction(s -> {
+                    try {
+                        return new JarFile(toURI(s).getSchemeSpecificPart());
+                    } catch (URISyntaxException ex) {
+                        return new JarFile(s.substring(FILE_URL_PREFIX.length()));
+                    }
+                })).orElseGet(ExceptionUtils.handleSupplier(() ->
+                        new JarFile(Objects.requireNonNull(jarFileUrl))));
     }
 
     private static URI toURI(String location) throws URISyntaxException {

@@ -63,11 +63,14 @@ public class AnnotationAppContext extends BeanFactoryImpl {
                 .ifPresent(classSet -> {
                     classSet.forEach(tClass -> Optional.ofNullable(tClass)
                             .filter(it -> it.getInterfaces().length > 0)
+                            // 有@Component组件的才将接口和bean存放在容器中
                             .map(it -> it.getDeclaredAnnotation(Component.class))
                             .ifPresent(it -> {
                                 String beanName = getValue(tClass, it);
+                                // 获取该类所实现的所有接口
                                 Set<String> iSet = Stream.of(tClass.getInterfaces())
                                         .map(Class::getName).collect(Collectors.toSet());
+                                // 将接口和bean的关系注册到容器
                                 registerInterfaceImpl(beanName, iSet);
                             }));
                     classSet.forEach(tClass -> {
@@ -115,12 +118,16 @@ public class AnnotationAppContext extends BeanFactoryImpl {
                                 // 获取注入实例的名称，构造函数里的所有参数都需@Resource注入实例
                                 Class<?> paramClass = parameter.getType();
                                 String paramClassName = paramClass.getName();
+                                // 获取构造函数的参数的注解
                                 Resource paramResource = parameter.getDeclaredAnnotation(Resource.class);
                                 Optional.of(paramClass)
+                                    // 判断是参数否是接口
                                     .filter(Class::isInterface)
                                     .map(pClass -> {
+                                        // 获取接口的所有实现
                                         Set<String> impSet = getInterfaceImpl(paramClass.getName());
                                         Optional.of(paramResource.value())
+                                                // 如果接口只有一个实现或者@Resource有指定bean则注入bean，否则报错
                                             .filter(value -> impSet.size() == 1 || StringUtils.isNotBlank(value))
                                             .map(value -> {
                                                 constructorArgs.add(new ConstructorArg(value, paramClassName));
@@ -131,6 +138,7 @@ public class AnnotationAppContext extends BeanFactoryImpl {
                                             });
                                         return pClass;
                                     }).orElseGet(() -> {
+                                        // 如果参数是类，则直接通过此类的bean名称获取bean
                                         String value = getValue(paramClass,
                                                 paramClass.getDeclaredAnnotation(Component.class));
                                         constructorArgs.add(new ConstructorArg(value, paramClassName));
@@ -155,17 +163,23 @@ public class AnnotationAppContext extends BeanFactoryImpl {
             .ifPresent(fields -> {
                 for (Field field : fields) {
                     Optional.ofNullable(field)
+                        // 获取@Resource注解
                         .map(it -> it.getDeclaredAnnotation(Resource.class))
-                        .map(resource -> {
+                        .ifPresent(resource ->
+                            // 获取Field的类名
                             Optional.of(field).map(Field::getType)
                                 .ifPresent(fieldClass ->
                                     Optional.of(fieldClass)
+                                        // 判断Field是否为接口
                                         .filter(Class::isInterface)
                                         .map(it -> {
+                                            // 查找接口的多个实现
                                             Set<String> impSet = getInterfaceImpl(fieldClass.getName());
                                             Optional.of(resource.value())
+                                                // 如果接口只有一个实现或者@Resource有指定bean则注入bean，否则报错
                                                 .filter(v -> impSet.size() == 1 || StringUtils.isNotBlank(v))
                                                 .map(fieldBeanName -> {
+                                                    // 注入Field
                                                     injectField(tClass, fieldBeanName, field);
                                                     return fieldBeanName;
                                                 }).orElseGet(() -> {
@@ -175,16 +189,17 @@ public class AnnotationAppContext extends BeanFactoryImpl {
                                             return it;
                                         }).orElseGet(() -> {
                                             Optional.of(fieldClass)
+                                                // 如果Field是类，则直接通过此类的bean名称获取bean
                                                 .map(it -> getValue(fieldClass,
                                                         fieldClass.getDeclaredAnnotation(Component.class)))
                                                 .ifPresent(fieldBeanName ->
+                                                        // 注入Field
                                                         injectField(tClass, fieldBeanName, field)
                                                 );
                                             return null;
                                         })
-                                );
-                            return resource;
-                        });
+                                )
+                        );
                 }
             });
     }
@@ -198,6 +213,7 @@ public class AnnotationAppContext extends BeanFactoryImpl {
      */
     private BeanDefinition createBeanDefinition(String beanName, Class<?> tClass, List<ConstructorArg> cons) {
         List<String> interfaceList =  Optional.ofNullable(tClass)
+                // 获取类实现的所有接口
                 .map(Class::getInterfaces)
                 .filter(ArrayUtils::isNotEmpty)
                 .map(list -> Stream.of(list)
@@ -230,6 +246,7 @@ public class AnnotationAppContext extends BeanFactoryImpl {
                     Optional.of(obj != null && value != null)
                             .filter(it -> it)
                             .map(it ->  {
+                                // 注入Field
                                 ReflectionUtils.injectField(field, obj, value);
                                 return true;
                             }).orElseGet(() -> {

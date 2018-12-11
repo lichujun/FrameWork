@@ -161,12 +161,16 @@ public class BeanFactoryImpl implements BeanFactory {
 
     /** 判断是否存在要注入的注解 */
     boolean existInject(Class<?> tClass) {
+        // 是否存在Component注解
         return Optional.ofNullable(tClass.getDeclaredAnnotation(Component.class))
             .map(it -> true)
+            // 是否存在Controller注解
             .orElseGet(() -> Optional.ofNullable(tClass.getDeclaredAnnotation(Controller.class))
                 .map(it -> true)
+                // 是否存在Service注解
                 .orElseGet(() -> Optional.ofNullable(tClass.getDeclaredAnnotation(Service.class))
                     .map(it -> true)
+                    // 是否存在Repository注解
                     .orElseGet(() -> tClass.getDeclaredAnnotation(Repository.class) != null)
                 )
             );
@@ -174,21 +178,27 @@ public class BeanFactoryImpl implements BeanFactory {
 
     /** 获取@Component等注入bean的名称 */
     String getValue(Class<?> tClass) {
+        // 获取注解注入的值
         String annotationValue =  Optional.ofNullable(
                 tClass.getDeclaredAnnotation(Component.class))
+            // 获取Component注解注入的值
             .map(Component::value)
             .orElseGet(() -> Optional.ofNullable(
                 tClass.getDeclaredAnnotation(Controller.class))
+                // 获取Controller注解注入的值
                 .map(Controller::value)
                 .orElseGet(() -> Optional.ofNullable(
                     tClass.getDeclaredAnnotation(Service.class))
+                    // 获取Service注解注入的值
                     .map(Service::value)
                     .orElseGet(() -> Optional.ofNullable(
                         tClass.getDeclaredAnnotation(Repository.class))
+                        // 获取Repository注解注入的值
                         .map(Repository::value)
                         .orElse(null)
                     )
                 ));
+        // 将注解值为空时将bean的名称设置为首字母小写的简单类名
         return Optional.ofNullable(annotationValue)
                 .map(value -> StringUtils.isNotBlank(value) ? value :
                         StringUtils.uncapitalize(tClass.getSimpleName()))

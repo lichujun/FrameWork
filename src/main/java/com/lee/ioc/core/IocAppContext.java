@@ -3,8 +3,6 @@ package com.lee.ioc.core;
 import com.lee.common.utils.exception.ExceptionUtils;
 import com.lee.common.utils.ioc.ReflectionUtils;
 import com.lee.common.utils.ioc.ScanUtils;
-import com.lee.ioc.annotation.Component;
-import com.lee.ioc.annotation.Controller;
 import com.lee.ioc.annotation.Resource;
 import com.lee.ioc.bean.BeanDefinition;
 import com.lee.ioc.bean.ConstructorArg;
@@ -67,6 +65,7 @@ public class IocAppContext extends BeanFactoryImpl {
                             // 有@Component组件的才将接口和bean的关系注册到容器中
                             .map(this::existInject)
                             .ifPresent(it -> {
+                                // 获取注入的值，为空则为首字母小写的简单类名
                                 String beanName = getValue(tClass);
                                 // 获取该类所实现的所有接口
                                 Set<String> iSet = Stream.of(tClass.getInterfaces())

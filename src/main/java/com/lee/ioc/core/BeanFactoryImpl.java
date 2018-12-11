@@ -11,7 +11,6 @@ import com.lee.common.utils.exception.ExceptionUtils;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Bean管理类
@@ -21,11 +20,11 @@ import java.util.concurrent.ConcurrentHashMap;
 public class BeanFactoryImpl implements BeanFactory {
 
     /** 存放对象的容器 */
-    private static Map<String, Object> BEAN_MAP = new ConcurrentHashMap<>();
+    private static Map<String, Object> BEAN_MAP = new HashMap<>();
     /** 存放对象数据结构的映射的容器 */
-    private static Map<String, BeanDefinition> BEAN_DEFINITION_MAP = new ConcurrentHashMap<>();
+    private static Map<String, BeanDefinition> BEAN_DEFINITION_MAP = new HashMap<>();
     /** 存放接口的实现对应关系 */
-    private static Map<String, Set<String>> INTERFACE_MAP = new ConcurrentHashMap<>();
+    private static Map<String, Set<String>> INTERFACE_MAP = new HashMap<>();
 
     @Override
     public Object getBean(String name) {

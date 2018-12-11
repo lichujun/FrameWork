@@ -2,15 +2,13 @@ package com.lee.ioc.annotation;
 
 import java.lang.annotation.*;
 
-import static java.lang.annotation.ElementType.*;
-
 /**
  * @author lichujun
- * @date 2018/12/9 10:17 AM
+ * @date 2018/12/11 10:31 PM
  */
-@Target({PARAMETER, FIELD})
+@Target(ElementType.TYPE)
 @Retention(RetentionPolicy.RUNTIME)
 @Documented
-public @interface Resource {
+public @interface Repository {
     String value() default "";
 }

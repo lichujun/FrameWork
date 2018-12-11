@@ -1,6 +1,9 @@
 package com.lee.ioc.core;
 
 import com.lee.ioc.annotation.Component;
+import com.lee.ioc.annotation.Controller;
+import com.lee.ioc.annotation.Repository;
+import com.lee.ioc.annotation.Service;
 import com.lee.ioc.bean.BeanDefinition;
 import com.lee.common.utils.ioc.BeanUtils;
 import com.lee.common.utils.ioc.ClassUtils;
@@ -39,18 +42,22 @@ public class BeanFactoryImpl implements BeanFactory {
     @Override
     public <T> T getBean(Class<T> tClass) {
         return Optional.ofNullable(tClass)
-            .map(it ->
-                // 获取当前类注入的值
-                Optional.ofNullable(it.getDeclaredAnnotation(Component.class))
-                    .map(Component::value)
-                    // 获取注入实例的名称
-                    .map(value -> StringUtils.isNotBlank(value) ? value
-                            : StringUtils.uncapitalize(it.getSimpleName()))
-                    // 获取实例
-                    .map(this::getBean)
-                    .map(it::cast)
-                    .orElse(null))
-            .orElse(null);
+                .map(it -> {
+                    Optional.of(it)
+                            .filter(Class::isInterface)
+                            .ifPresent(t -> {
+                                throw new RuntimeException(t
+                                        + "是接口，不能实例化");
+                            });
+                    return it;
+                })
+                .map(it -> Optional.of(it)
+                        .filter(this::existInject)
+                        .map(this::getValue)
+                        .map(this::getBean)
+                        .map(tClass::cast)
+                        .orElse(null)
+                ).orElse(null);
     }
 
     /**
@@ -150,5 +157,43 @@ public class BeanFactoryImpl implements BeanFactory {
                 // 通过Class对象实例化对象
                 .orElseGet(() -> BeanUtils.instance(it, null, null))
             ).orElse(null);
+    }
+
+    /** 判断是否存在要注入的注解 */
+    boolean existInject(Class<?> tClass) {
+        return Optional.ofNullable(tClass.getDeclaredAnnotation(Component.class))
+            .map(it -> true)
+            .orElseGet(() -> Optional.ofNullable(tClass.getDeclaredAnnotation(Controller.class))
+                .map(it -> true)
+                .orElseGet(() -> Optional.ofNullable(tClass.getDeclaredAnnotation(Service.class))
+                    .map(it -> true)
+                    .orElseGet(() -> tClass.getDeclaredAnnotation(Repository.class) != null)
+                )
+            );
+    }
+
+    /** 获取@Component等注入bean的名称 */
+    String getValue(Class<?> tClass) {
+        String annotationValue =  Optional.ofNullable(
+                tClass.getDeclaredAnnotation(Component.class))
+            .map(Component::value)
+            .orElseGet(() -> Optional.ofNullable(
+                tClass.getDeclaredAnnotation(Controller.class))
+                .map(Controller::value)
+                .orElseGet(() -> Optional.ofNullable(
+                    tClass.getDeclaredAnnotation(Service.class))
+                    .map(Service::value)
+                    .orElseGet(() -> Optional.ofNullable(
+                        tClass.getDeclaredAnnotation(Repository.class))
+                        .map(Repository::value)
+                        .orElse(null)
+                    )
+                ));
+        return Optional.ofNullable(annotationValue)
+                .map(value -> StringUtils.isNotBlank(value) ? value :
+                        StringUtils.uncapitalize(tClass.getSimpleName()))
+                .orElseGet(() -> {
+                    throw new RuntimeException("注入组件未标注注解");
+                });
     }
 }

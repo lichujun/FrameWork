@@ -1,5 +1,6 @@
 package com.lee.common.utils.ioc;
 
+import com.lee.ioc.core.BeanFactoryImpl;
 import lombok.Getter;
 import org.apache.commons.collections4.EnumerationUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -60,6 +61,7 @@ public class ScanUtils {
         for (String basePackage : basePackages) {
             classes.addAll(getClasses(basePackage));
         }
+        BeanFactoryImpl.setClassSet(classes);
         return classes;
     }
 

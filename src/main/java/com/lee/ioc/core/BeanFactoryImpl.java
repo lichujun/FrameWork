@@ -10,7 +10,10 @@ import com.lee.common.utils.ioc.ClassUtils;
 import com.lee.common.utils.exception.ExceptionUtils;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
+
+import java.lang.annotation.Annotation;
 import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * Bean管理类
@@ -19,6 +22,8 @@ import java.util.*;
  */
 public class BeanFactoryImpl implements BeanFactory {
 
+    /** 存放所有扫描到的类 */
+    private static Set<Class<?>> CLASS_SET = null;
     /** 存放对象的容器 */
     private static Map<String, Object> BEAN_MAP = new HashMap<>();
     /** 存放对象数据结构的映射的容器 */
@@ -205,4 +210,27 @@ public class BeanFactoryImpl implements BeanFactory {
                     throw new RuntimeException("注入组件未标注注解");
                 });
     }
+
+    /**
+     * 将扫描出的所有Class对象存在容器
+     * @param classSet Class对象集合
+     */
+    public static void setClassSet(Set<Class<?>> classSet) {
+        CLASS_SET = classSet;
+    }
+
+    /**
+     * 通过注解获取类集合
+     * @param annotation 注解Class对象
+     * @return 类集合
+     */
+    public static Set<Class<?>> getClassesByAnnotation(Class<? extends Annotation> annotation) {
+        return Optional.ofNullable(CLASS_SET)
+                .filter(CollectionUtils::isNotEmpty)
+                .map(set -> set.stream()
+                        .filter(it -> it.isAnnotationPresent(annotation))
+                        .collect(Collectors.toSet())
+                ).orElse(null);
+    }
+
 }

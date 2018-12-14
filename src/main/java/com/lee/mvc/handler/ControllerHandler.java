@@ -6,6 +6,7 @@ import com.lee.mvc.annotation.RequestMapping;
 import com.lee.mvc.annotation.RequestParam;
 import com.lee.mvc.bean.ControllerInfo;
 import com.lee.mvc.bean.PathInfo;
+import com.lee.mvc.bean.RequestMethod;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -100,9 +101,9 @@ public class ControllerHandler {
                                 .map(this::completeSeparator)
                                 .orElse("");
                             // 请求方法
-                            String reqMethod = Optional.of(reqMapping)
+                            RequestMethod reqMethod = Optional.of(reqMapping)
                                 .map(RequestMapping::method)
-                                .orElse("GET");
+                                .orElse(RequestMethod.GET);
                             // 获取方法的参数
                             Map<String, Class<?>> paramMap = Optional.ofNullable(method.getParameters())
                                 .filter(ArrayUtils::isNotEmpty)
@@ -126,7 +127,7 @@ public class ControllerHandler {
                                     }
                                     return params;
                                 }).orElse(null);
-                            PathInfo pathInfo = new PathInfo(httpPath, reqMethod);
+                            PathInfo pathInfo = new PathInfo(httpPath, reqMethod.toString());
                             ControllerInfo controllerInfo = new ControllerInfo(controller, method, paramMap);
                             Optional.ofNullable(PATH_CONTROLLER.put(pathInfo, controllerInfo))
                                 .ifPresent(it -> {

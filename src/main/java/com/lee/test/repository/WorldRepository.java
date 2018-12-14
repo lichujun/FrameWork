@@ -1,4 +1,4 @@
-package com.lee.ioc.test.repository;
+package com.lee.test.repository;
 
 import com.lee.ioc.annotation.Repository;
 

@@ -61,7 +61,6 @@ public class ScanUtils {
         for (String basePackage : basePackages) {
             classes.addAll(getClasses(basePackage));
         }
-        BeanFactoryImpl.setClassSet(classes);
         return classes;
     }
 

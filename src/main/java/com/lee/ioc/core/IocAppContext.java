@@ -26,8 +26,30 @@ public class IocAppContext extends BeanFactoryImpl {
 
     private String fileName;
 
-    public IocAppContext(String fileName) {
+    private static String SCAN_YAML = "scan.yml";
+
+    /** 初始化扫描包的配置文件 */
+    public static void initScanPath(String fileName) {
+        SCAN_YAML = fileName;
+    }
+
+    private IocAppContext(String fileName) {
         this.fileName = fileName;
+    }
+
+    private enum IocAppHolder {
+        // 单例
+        INSTANCE;
+
+        private IocAppContext context;
+
+        IocAppHolder() {
+            context = new IocAppContext(SCAN_YAML);
+        }
+    }
+
+    public static IocAppContext getInstance() {
+        return IocAppHolder.INSTANCE.context;
     }
 
     /** 初始化自定义注解的依赖注入 */
@@ -60,6 +82,7 @@ public class IocAppContext extends BeanFactoryImpl {
                 .map(ExceptionUtils.handlerFunction(ScanUtils::getAllClassPathClasses))
                 .filter(CollectionUtils::isNotEmpty)
                 .ifPresent(classSet -> {
+                    this.setClassSet(classSet);
                     classSet.forEach(tClass -> Optional.ofNullable(tClass)
                             .filter(it -> it.getInterfaces().length > 0)
                             // 有@Component组件的才将接口和bean的关系注册到容器中

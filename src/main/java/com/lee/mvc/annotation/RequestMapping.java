@@ -1,7 +1,5 @@
 package com.lee.mvc.annotation;
 
-import com.lee.mvc.core.RequestMethod;
-
 import java.lang.annotation.*;
 
 /**
@@ -22,5 +20,5 @@ public @interface RequestMapping {
     /**
      * 请求方法
      */
-    RequestMethod method() default RequestMethod.GET;
+    String method() default "GET";
 }

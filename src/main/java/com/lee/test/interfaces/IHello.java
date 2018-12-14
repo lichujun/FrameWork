@@ -1,4 +1,4 @@
-package com.lee.ioc.test.interfaces;
+package com.lee.test.interfaces;
 
 /**
  * @author lichujun

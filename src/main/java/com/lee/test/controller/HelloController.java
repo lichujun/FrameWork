@@ -1,9 +1,11 @@
-package com.lee.ioc.test.controller;
+package com.lee.test.controller;
 
 import com.lee.ioc.annotation.Controller;
 import com.lee.ioc.annotation.Resource;
-import com.lee.ioc.test.interfaces.IHello;
-import com.lee.ioc.test.service.WorldService;
+import com.lee.mvc.annotation.RequestMapping;
+import com.lee.mvc.annotation.RequestParam;
+import com.lee.test.interfaces.IHello;
+import com.lee.test.service.WorldService;
 
 /**
  * @author lichujun
@@ -11,6 +13,7 @@ import com.lee.ioc.test.service.WorldService;
  */
 @Controller
 public class HelloController {
+
     @Resource("helloService")
     private IHello helloService;
     private final IHello worldService;
@@ -19,8 +22,15 @@ public class HelloController {
         this.worldService = worldService;
     }
 
-    public void sayHello() {
+    @RequestMapping("/hello")
+    public String test() {
+        return null;
+    }
+
+    @RequestMapping("/")
+    public String sayHello() {
         worldService.doSomething();
         helloService.sayHello();
+        return null;
     }
 }

@@ -1,6 +1,5 @@
 package com.lee.mvc.bean;
 
-import com.lee.mvc.core.RequestMethod;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -22,5 +21,5 @@ public class PathInfo {
     /**
      * 处理http请求的方法
      */
-    private RequestMethod httpMethod;
+    private String httpMethod;
 }

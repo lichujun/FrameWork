@@ -215,7 +215,7 @@ public class BeanFactoryImpl implements BeanFactory {
      * 将扫描出的所有Class对象存在容器
      * @param classSet Class对象集合
      */
-    public static void setClassSet(Set<Class<?>> classSet) {
+    void setClassSet(Set<Class<?>> classSet) {
         CLASS_SET = classSet;
     }
 
@@ -224,7 +224,7 @@ public class BeanFactoryImpl implements BeanFactory {
      * @param annotation 注解Class对象
      * @return 类集合
      */
-    public static Set<Class<?>> getClassesByAnnotation(Class<? extends Annotation> annotation) {
+    public Set<Class<?>> getClassesByAnnotation(Class<? extends Annotation> annotation) {
         return Optional.ofNullable(CLASS_SET)
                 .filter(CollectionUtils::isNotEmpty)
                 .map(set -> set.stream()

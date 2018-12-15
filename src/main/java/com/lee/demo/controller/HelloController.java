@@ -1,5 +1,6 @@
 package com.lee.demo.controller;
 
+import com.lee.demo.entity.Hello;
 import com.lee.ioc.annotation.Controller;
 import com.lee.ioc.annotation.Resource;
 import com.lee.mvc.annotation.RequestMapping;
@@ -31,8 +32,8 @@ public class HelloController {
 
     @RequestMapping("/helloWorld")
     @ResponseBody
-    public String test(@RequestParam("hello") String str) {
-        return str;
+    public Hello test(@RequestParam("hello") String str) {
+        return new Hello(str);
     }
 
     @RequestMapping("/")

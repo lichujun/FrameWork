@@ -82,10 +82,10 @@ public class ControllerHandler implements Handler {
                 .map(info -> {
                     Object result = invokeController(controllerInfo, handlerChain.getRequest());
                     setRender(result, controllerInfo, handlerChain);
-                    return true;
+                    return false;
                 }).orElseGet(() -> {
                     handlerChain.setRender(new NotFoundRender());
-                    return false;
+                    return true;
                 });
     }
 

@@ -8,7 +8,9 @@ import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import java.util.Iterator;
+import java.util.List;
+import java.util.Optional;
+
 /**
  * @author lichujun
  * @date 2018/12/15 13:57
@@ -20,7 +22,7 @@ public class RequestHandlerChain {
     /**
      * Handler迭代器
      */
-    private Iterator<Handler> handlerIt;
+    private List<Handler> handlers;
 
     /**
      * 请求request
@@ -52,8 +54,8 @@ public class RequestHandlerChain {
      */
     private Render render;
 
-    public RequestHandlerChain(Iterator<Handler> handlerIt, HttpServletRequest request, HttpServletResponse response) {
-        this.handlerIt = handlerIt;
+    public RequestHandlerChain(List<Handler> handlers, HttpServletRequest request, HttpServletResponse response) {
+        this.handlers = handlers;
         this.request = request;
         this.response = response;
         this.requestMethod = request.getMethod();
@@ -66,11 +68,18 @@ public class RequestHandlerChain {
      */
     public void doHandlerChain() {
         try {
-            while (handlerIt.hasNext()) {
-                if (!handlerIt.next().handle(this)) {
-                    break;
-                }
-            }
+            Optional.ofNullable(handlers)
+                    .filter(list -> list.stream().anyMatch(it -> {
+                        try {
+                            return !it.handle(this);
+                        } catch (Exception e) {
+                            log.error("handler处理请求失败", e);
+                            return false;
+                        }
+                    })).orElseGet(() -> {
+                        log.error("找不到相应的handler处理");
+                        return null;
+                    });
         } catch (Exception e) {
             log.error("doHandlerChain error", e);
             render = new InternalErrorRender();

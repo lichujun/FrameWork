@@ -5,7 +5,7 @@ import com.lee.mvc.handler.ControllerHandler;
 import com.lee.mvc.handler.Handler;
 import com.lee.mvc.handler.JspHandler;
 import com.lee.mvc.handler.SimpleUrlHandler;
-import com.lee.mvc.render.PreRequestHandler;
+import com.lee.mvc.handler.PreRequestHandler;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -25,7 +25,7 @@ public class DispatcherServlet extends HttpServlet {
 
     @Override
     protected void service(HttpServletRequest req, HttpServletResponse resp) {
-        RequestHandlerChain handlerChain = new RequestHandlerChain(HANDLER.iterator(), req, resp);
+        RequestHandlerChain handlerChain = new RequestHandlerChain(HANDLER, req, resp);
         handlerChain.doHandlerChain();
         handlerChain.doRender();
     }

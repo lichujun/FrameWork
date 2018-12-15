@@ -1,7 +1,7 @@
 package com.lee.ioc;
 
 import com.lee.ioc.core.IocAppContext;
-import com.lee.test.controller.HelloController;
+import com.lee.demo.controller.HelloController;
 
 /**
  * @author lichujun

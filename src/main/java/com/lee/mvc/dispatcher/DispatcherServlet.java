@@ -1,14 +1,16 @@
 package com.lee.mvc.dispatcher;
 
-import com.lee.mvc.bean.ControllerInfo;
+import com.lee.mvc.RequestHandlerChain;
 import com.lee.mvc.handler.ControllerHandler;
-import com.lee.mvc.render.ResultRender;
-
-import javax.servlet.ServletException;
+import com.lee.mvc.handler.Handler;
+import com.lee.mvc.handler.JspHandler;
+import com.lee.mvc.handler.SimpleUrlHandler;
+import com.lee.mvc.render.PreRequestHandler;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * @author lichujun
@@ -16,26 +18,23 @@ import java.io.IOException;
  */
 public class DispatcherServlet extends HttpServlet {
 
-    private ControllerHandler controllerHandler = ControllerHandler.getInstance();
-
-    private ResultRender resultRender = new ResultRender();
+    /**
+     * 请求执行链
+     */
+    private final List<Handler> HANDLER = new ArrayList<>();
 
     @Override
-    protected void service(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-        // 设置请求编码方式
-        req.setCharacterEncoding("UTF-8");
-        //获取请求方法和请求路径
-        String requestMethod = req.getMethod();
-        String requestPath = req.getPathInfo();
-        if (requestPath.endsWith("/")) {
-            requestPath = requestPath.substring(0, requestPath.length() - 1);
-        }
+    protected void service(HttpServletRequest req, HttpServletResponse resp) {
+        RequestHandlerChain handlerChain = new RequestHandlerChain(HANDLER.iterator(), req, resp);
+        handlerChain.doHandlerChain();
+        handlerChain.doRender();
+    }
 
-        ControllerInfo controllerInfo = controllerHandler.getController(requestPath, requestMethod);
-        if (null == controllerInfo) {
-            resp.sendError(HttpServletResponse.SC_NOT_FOUND);
-            return;
-        }
-        resultRender.invokeController(req, resp, controllerInfo);
+    @Override
+    public void init() {
+        HANDLER.add(new PreRequestHandler());
+        HANDLER.add(new SimpleUrlHandler(getServletContext()));
+        HANDLER.add(new JspHandler(getServletContext()));
+        HANDLER.add(ControllerHandler.getInstance());
     }
 }

@@ -22,6 +22,11 @@ public class ModelAndView {
      */
     private Map<String, Object> model = new HashMap<>();
 
+    public ModelAndView setView(String view) {
+        this.view = view;
+        return this;
+    }
+
     public ModelAndView setModel(Map<String, Object> model) {
         this.model = model;
         return this;

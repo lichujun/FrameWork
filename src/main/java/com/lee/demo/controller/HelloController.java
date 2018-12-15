@@ -1,11 +1,12 @@
-package com.lee.test.controller;
+package com.lee.demo.controller;
 
 import com.lee.ioc.annotation.Controller;
 import com.lee.ioc.annotation.Resource;
 import com.lee.mvc.annotation.RequestMapping;
 import com.lee.mvc.annotation.RequestParam;
-import com.lee.test.interfaces.IHello;
-import com.lee.test.service.WorldService;
+import com.lee.mvc.annotation.ResponseBody;
+import com.lee.demo.interfaces.IHello;
+import com.lee.demo.service.WorldService;
 
 /**
  * @author lichujun
@@ -23,8 +24,15 @@ public class HelloController {
     }
 
     @RequestMapping("/hello")
+    @ResponseBody
     public String test() {
-        return null;
+        return "world sucks";
+    }
+
+    @RequestMapping("/helloWorld")
+    @ResponseBody
+    public String test(@RequestParam("hello") String str) {
+        return str;
     }
 
     @RequestMapping("/")

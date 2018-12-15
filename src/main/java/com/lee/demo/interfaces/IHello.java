@@ -1,4 +1,4 @@
-package com.lee.test.interfaces;
+package com.lee.demo.interfaces;
 
 /**
  * @author lichujun

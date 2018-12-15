@@ -1,9 +1,9 @@
-package com.lee.test.service;
+package com.lee.demo.service;
 
 import com.lee.ioc.annotation.Resource;
 import com.lee.ioc.annotation.Service;
-import com.lee.test.interfaces.IHello;
-import com.lee.test.repository.HelloRepository;
+import com.lee.demo.interfaces.IHello;
+import com.lee.demo.repository.HelloRepository;
 
 /**
  * @author lichujun

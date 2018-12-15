@@ -1,5 +1,6 @@
 package com.lee.mvc;
 
+import com.lee.common.utils.exception.ExceptionUtils;
 import com.lee.mvc.handler.Handler;
 import com.lee.mvc.render.DefaultRender;
 import com.lee.mvc.render.InternalErrorRender;
@@ -77,7 +78,8 @@ public class RequestHandlerChain {
                             return false;
                         }
                     })).orElseGet(() -> {
-                        log.error("找不到相应的handler处理");
+                        log.error("找不到相应的handler处理请求：{} {}",
+                                requestMethod, requestPath);
                         return null;
                     });
         } catch (Exception e) {
@@ -90,11 +92,10 @@ public class RequestHandlerChain {
      * 执行处理器
      */
     public void doRender() {
-        if (null == render) {
-            render = new DefaultRender();
-        }
         try {
-            render.render(this);
+            Optional.ofNullable(render)
+                    .orElseGet(DefaultRender::new)
+                    .render(this);
         } catch (Exception e) {
             log.error("doRender", e);
             throw new RuntimeException(e);

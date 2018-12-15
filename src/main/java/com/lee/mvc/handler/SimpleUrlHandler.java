@@ -15,7 +15,6 @@ import java.util.Optional;
 public class SimpleUrlHandler implements Handler {
     /**
      * tomcat默认RequestDispatcher的名称
-     * TODO: 其他服务器默认的RequestDispatcher.如WebLogic为FileServlet
      */
     private static final String TOMCAT_DEFAULT_SERVLET = "default";
 

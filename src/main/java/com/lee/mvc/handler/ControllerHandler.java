@@ -142,7 +142,7 @@ public class ControllerHandler implements Handler {
                 .map(paramEntry ->
                         paramEntry.stream().map(entry -> Optional.ofNullable(reqParam)
                                 .map(it -> it.get(entry.getKey()))
-                                // TODO 支持反序列化
+                                // TODO 序列化
                                 .map(ExceptionUtils.handlerFunction(it -> (Object) it))
                                 .orElse(null))
                                 .collect(Collectors.toList())

@@ -1,7 +1,7 @@
 package com.lee.mvc.handler;
 
-import com.lee.common.ApplicationContext;
-import com.lee.mvc.RequestHandlerChain;
+import com.lee.mvc.core.MvcApplicationContext;
+import com.lee.mvc.core.RequestHandlerChain;
 import lombok.extern.slf4j.Slf4j;
 import javax.servlet.RequestDispatcher;
 import javax.servlet.ServletContext;
@@ -47,6 +47,6 @@ public class SimpleUrlHandler implements Handler {
      * 是否为静态资源
      */
     private boolean isStaticResource(String url) {
-        return url.startsWith(ApplicationContext.getCONFIGURATION().getAssetPath());
+        return url.startsWith(MvcApplicationContext.getCONFIGURATION().getAssetPath());
     }
 }

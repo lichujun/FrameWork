@@ -1,4 +1,4 @@
-package com.lee.common;
+package com.lee.mvc.core;
 
 import com.lee.conf.ServerConfiguration;
 import com.lee.ioc.core.IocAppContext;
@@ -16,7 +16,7 @@ import lombok.extern.slf4j.Slf4j;
  */
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 @Slf4j
-public class ApplicationContext {
+public class MvcApplicationContext {
 
     /**
      * 全局配置
@@ -48,7 +48,7 @@ public class ApplicationContext {
      * 启动
      */
     private static void run(ServerConfiguration configuration) {
-        new ApplicationContext().start(configuration);
+        new MvcApplicationContext().start(configuration);
     }
 
     /**
@@ -56,12 +56,12 @@ public class ApplicationContext {
      */
     private void start(ServerConfiguration configuration) {
         try {
-            ApplicationContext.CONFIGURATION = configuration;
+            MvcApplicationContext.CONFIGURATION = configuration;
             IocAppContext.initScanPath(configuration.getScanPath());
             IocAppContext context = IocAppContext.getInstance();
             context.init();
-            ControllerHandler handler = ControllerHandler.getInstance();
-            handler.init(context);
+            ScanMvcComponent scanMvcComponent = ScanMvcComponent.getInstance();
+            scanMvcComponent.init(context);
             SERVER = new TomcatServer(configuration);
             SERVER.startServer();
         } catch (Exception e) {

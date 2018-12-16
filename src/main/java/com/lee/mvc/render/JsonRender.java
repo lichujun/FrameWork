@@ -1,7 +1,7 @@
 package com.lee.mvc.render;
 
 import com.alibaba.fastjson.JSON;
-import com.lee.mvc.RequestHandlerChain;
+import com.lee.mvc.core.RequestHandlerChain;
 import lombok.extern.slf4j.Slf4j;
 
 import java.io.PrintWriter;

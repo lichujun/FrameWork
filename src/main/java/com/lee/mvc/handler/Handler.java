@@ -1,6 +1,6 @@
 package com.lee.mvc.handler;
 
-import com.lee.mvc.RequestHandlerChain;
+import com.lee.mvc.core.RequestHandlerChain;
 
 /**
  * @author lichujun

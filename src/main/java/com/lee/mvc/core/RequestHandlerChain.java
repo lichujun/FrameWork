@@ -1,6 +1,5 @@
-package com.lee.mvc;
+package com.lee.mvc.core;
 
-import com.lee.common.utils.exception.ExceptionUtils;
 import com.lee.mvc.handler.Handler;
 import com.lee.mvc.render.DefaultRender;
 import com.lee.mvc.render.InternalErrorRender;

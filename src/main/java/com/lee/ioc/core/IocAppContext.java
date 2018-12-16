@@ -24,17 +24,11 @@ import java.util.stream.Stream;
  */
 public class IocAppContext extends BeanFactoryImpl {
 
-    private String fileName;
-
-    private static String SCAN_YAML = "scan.yml";
+    private static String SCAN_PATH;
 
     /** 初始化扫描包的配置文件 */
     public static void initScanPath(String fileName) {
-        SCAN_YAML = fileName;
-    }
-
-    private IocAppContext(String fileName) {
-        this.fileName = fileName;
+        SCAN_PATH = fileName;
     }
 
     private enum IocAppHolder {
@@ -44,7 +38,7 @@ public class IocAppContext extends BeanFactoryImpl {
         private IocAppContext context;
 
         IocAppHolder() {
-            context = new IocAppContext(SCAN_YAML);
+            context = new IocAppContext();
         }
     }
 
@@ -61,7 +55,7 @@ public class IocAppContext extends BeanFactoryImpl {
     /** 加载yaml配置文件，获取包名 */
     private Set<String> loadPackages() {
         Yaml yaml = new Yaml();
-        return Optional.ofNullable(fileName)
+        return Optional.ofNullable(SCAN_PATH)
                 .filter(StringUtils::isNotBlank)
                 // 通过加载器将yaml文件加载成流
                 .map(it -> Thread.currentThread().getContextClassLoader().getResourceAsStream(it))

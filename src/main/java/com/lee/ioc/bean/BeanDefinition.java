@@ -21,8 +21,6 @@ public class BeanDefinition {
     /** 构造函数的传参 */
     private List<ConstructorArg> constructorArgs;
 
-    public BeanDefinition() {}
-
     public BeanDefinition(String name, String className, List<String> interfaces,
                           List<ConstructorArg> constructorArgs) {
         this.name = name;

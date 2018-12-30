@@ -132,19 +132,20 @@ public class BeanFactoryImpl implements BeanFactory {
             // 获取需要创建的实体的类名
             .map(BeanDefinition::getClassName)
             // 通过反射获取需要创建的实体的Class对象
-            .map(ExceptionUtils.handlerFunction(ClassUtils::loadClass))
+            .map(ExceptionUtils.handleFunction(ClassUtils::loadClass))
             // 如果有构造函数，就反射获取构造函数创建实例，如果不是就通过Class对象创建实例
-            .map(it -> Optional.ofNullable(beanDefinition.getConstructorArgs())
+            .map(it -> Optional.ofNullable(beanDefinition)
+                .map(BeanDefinition::getConstructorArgs)
                 // 过滤构造函数参数为空的构造函数
                 .filter(CollectionUtils::isNotEmpty)
                 // 通过获取构造函数、参数实例化对象
-                .map(ExceptionUtils.handlerFunction(args -> {
+                .map(ExceptionUtils.handleFunction(args -> {
                     List<Object> objects = new ArrayList<>();
                     List<Class<?>> classList = new ArrayList<>();
                     // 将参数类型和参数放入到list集合中，方便转换成数组结构
-                    args.forEach(ExceptionUtils.handlerConsumer(arg ->
+                    args.forEach(ExceptionUtils.handleConsumer(arg ->
                         Optional.ofNullable(getBean(arg.getRef()))
-                                .map(ExceptionUtils.handlerFunction(bean -> {
+                                .map(ExceptionUtils.handleFunction(bean -> {
                                     objects.add(bean);
                                     classList.add(Class.forName(arg.getClassName()));
                                     return bean;

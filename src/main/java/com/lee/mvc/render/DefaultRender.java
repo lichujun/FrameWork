@@ -8,7 +8,7 @@ import com.lee.mvc.core.RequestHandlerChain;
  */
 public class DefaultRender implements Render {
     @Override
-    public void render(RequestHandlerChain handlerChain) throws Exception {
+    public void render(RequestHandlerChain handlerChain) {
         int status = handlerChain.getResponseStatus();
         handlerChain.getResponse().setStatus(status);
     }

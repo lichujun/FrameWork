@@ -18,7 +18,7 @@ import java.util.function.Supplier;
 public class ExceptionUtils {
 
     /** Consumer抛出异常 */
-    public static <T, E extends Exception> Consumer<T> handlerConsumer(ThrowConsumer<T, E> consumer) {
+    public static <T, E extends Exception> Consumer<T> handleConsumer(ThrowConsumer<T, E> consumer) {
         return it -> {
             try {
                 consumer.accept(it);
@@ -40,7 +40,7 @@ public class ExceptionUtils {
     }
 
     /** Function抛出异常 */
-    public static <T, K, E extends Exception> Function<T, K> handlerFunction(
+    public static <T, K, E extends Exception> Function<T, K> handleFunction(
             ThrowFunction<T, K, E> function) {
         return t -> {
           try {

@@ -73,7 +73,7 @@ public class IocAppContext extends BeanFactoryImpl {
         Optional.ofNullable(packages)
                 .filter(CollectionUtils::isNotEmpty)
                 // 扫描包，将Class对象存放在Set集合
-                .map(ExceptionUtils.handlerFunction(ScanUtils::getAllClassPathClasses))
+                .map(ExceptionUtils.handleFunction(ScanUtils::getAllClassPathClasses))
                 .filter(CollectionUtils::isNotEmpty)
                 .ifPresent(classSet -> {
                     this.setClassSet(classSet);

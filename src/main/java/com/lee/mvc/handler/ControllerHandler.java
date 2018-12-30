@@ -98,7 +98,7 @@ public class ControllerHandler implements Handler {
                         paramEntry.stream().map(entry -> Optional.ofNullable(reqParam)
                                 .map(it -> it.get(entry.getKey()))
                                 // TODO 序列化
-                                .map(ExceptionUtils.handlerFunction(it -> (Object) it))
+                                .map(ExceptionUtils.handleFunction(it -> (Object) it))
                                 .orElse(null))
                                 .collect(Collectors.toList())
                 ).orElse(null);

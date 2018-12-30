@@ -36,7 +36,7 @@ public class JspHandler implements Handler {
     public boolean handle(final RequestHandlerChain handlerChain) {
         return Optional.of(handlerChain.getRequestPath())
                 .filter(this::isPageView)
-                .map(ExceptionUtils.handlerFunction(it -> {
+                .map(ExceptionUtils.handleFunction(it -> {
                     jspServlet.forward(handlerChain.getRequest(), handlerChain.getResponse());
                     return false;
                 })).orElse(true);

@@ -16,6 +16,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -26,7 +27,7 @@ import java.util.stream.Stream;
 public class ScanMvcComponent {
 
     /** 上下文信息和Controller关系集合 */
-    private static Map<PathInfo, ControllerInfo> PATH_CONTROLLER = new HashMap<>();
+    private static Map<PathInfo, ControllerInfo> PATH_CONTROLLER = new ConcurrentHashMap<>();
 
     public static ScanMvcComponent getInstance() {
         return ScanMvcComponentHolder.INSTANCE.scanMvcComponent;

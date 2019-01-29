@@ -13,6 +13,7 @@ import org.apache.commons.lang3.StringUtils;
 
 import java.lang.annotation.Annotation;
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
 /**
@@ -25,11 +26,11 @@ public class BeanFactoryImpl implements BeanFactory {
     /** 存放所有扫描到的类 */
     private static Set<Class<?>> CLASS_SET = null;
     /** 存放对象的容器 */
-    private static Map<String, Object> BEAN_MAP = new HashMap<>();
+    private static Map<String, Object> BEAN_MAP = new ConcurrentHashMap<>();
     /** 存放对象数据结构的映射的容器 */
-    private static Map<String, BeanDefinition> BEAN_DEFINITION_MAP = new HashMap<>();
+    private static Map<String, BeanDefinition> BEAN_DEFINITION_MAP = new ConcurrentHashMap<>();
     /** 存放接口的实现对应关系 */
-    private static Map<String, Set<String>> INTERFACE_MAP = new HashMap<>();
+    private static Map<String, Set<String>> INTERFACE_MAP = new ConcurrentHashMap<>();
 
     @Override
     public Object getBean(String name) {

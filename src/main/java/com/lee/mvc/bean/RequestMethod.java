@@ -6,5 +6,5 @@ package com.lee.mvc.bean;
  */
 public enum RequestMethod {
     // 请求类型枚举
-    GET, POST, PUT, DELETE;
+    GET, POST, ;
 }

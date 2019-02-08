@@ -1,4 +1,4 @@
-package com.lee.mvc.handler;
+package com.lee.mvc.handler.tomcat;
 
 import com.lee.common.utils.exception.ExceptionUtils;
 import com.lee.ioc.core.IocAppContext;
@@ -24,7 +24,7 @@ import java.util.stream.Collectors;
  * @date 2018/12/14 13:06
  */
 @Slf4j
-public class ControllerHandler implements Handler {
+public class JsonHandler implements Handler {
 
 
     @Override

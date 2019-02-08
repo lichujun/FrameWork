@@ -2,8 +2,8 @@ package com.lee.mvc.core;
 
 import com.lee.conf.ServerConfiguration;
 import com.lee.ioc.core.IocAppContext;
+import com.lee.mvc.server.NettyServer;
 import com.lee.mvc.server.Server;
-import com.lee.mvc.server.TomcatServer;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -15,7 +15,7 @@ import lombok.extern.slf4j.Slf4j;
  */
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 @Slf4j
-public class MvcApplicationContext {
+public class ApplicationContext {
 
     /**
      * 全局配置
@@ -47,7 +47,7 @@ public class MvcApplicationContext {
      * 启动
      */
     private static void run(ServerConfiguration configuration) {
-        new MvcApplicationContext().start(configuration);
+        new ApplicationContext().start(configuration);
     }
 
     /**
@@ -55,13 +55,14 @@ public class MvcApplicationContext {
      */
     private void start(ServerConfiguration configuration) {
         try {
-            MvcApplicationContext.CONFIGURATION = configuration;
+            ApplicationContext.CONFIGURATION = configuration;
             IocAppContext.initScanPath(configuration.getScanPath());
             IocAppContext context = IocAppContext.getInstance();
             context.init();
             ScanMvcComponent scanMvcComponent = ScanMvcComponent.getInstance();
             scanMvcComponent.init(context);
-            SERVER = new TomcatServer(configuration);
+            // SERVER = new TomcatServer(configuration);
+            SERVER = new NettyServer(configuration);
             SERVER.startServer();
         } catch (Exception e) {
             log.error("Doodle 启动失败", e);

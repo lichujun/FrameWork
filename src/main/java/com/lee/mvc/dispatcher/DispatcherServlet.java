@@ -1,11 +1,11 @@
 package com.lee.mvc.dispatcher;
 
 import com.lee.mvc.core.RequestHandlerChain;
-import com.lee.mvc.handler.ControllerHandler;
-import com.lee.mvc.handler.Handler;
-import com.lee.mvc.handler.JspHandler;
-import com.lee.mvc.handler.SimpleUrlHandler;
-import com.lee.mvc.handler.PreRequestHandler;
+import com.lee.mvc.handler.tomcat.JsonHandler;
+import com.lee.mvc.handler.tomcat.Handler;
+import com.lee.mvc.handler.tomcat.JspHandler;
+import com.lee.mvc.handler.tomcat.SimpleUrlHandler;
+import com.lee.mvc.handler.tomcat.PreRequestHandler;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -35,6 +35,6 @@ public class DispatcherServlet extends HttpServlet {
         HANDLER.add(new PreRequestHandler());
         HANDLER.add(new SimpleUrlHandler(getServletContext()));
         HANDLER.add(new JspHandler(getServletContext()));
-        HANDLER.add(new ControllerHandler());
+        HANDLER.add(new JsonHandler());
     }
 }

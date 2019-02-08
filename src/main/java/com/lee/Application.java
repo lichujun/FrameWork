@@ -1,6 +1,6 @@
 package com.lee;
 
-import com.lee.mvc.core.MvcApplicationContext;
+import com.lee.mvc.core.ApplicationContext;
 
 /**
  * @author lichujun
@@ -9,6 +9,6 @@ import com.lee.mvc.core.MvcApplicationContext;
 public class Application {
 
     public static void main(String[] args) {
-        MvcApplicationContext.run(Application.class);
+        ApplicationContext.run(Application.class);
     }
 }

@@ -1,6 +1,6 @@
 package com.lee.mvc.render;
 
-import com.lee.mvc.core.MvcApplicationContext;
+import com.lee.mvc.core.ApplicationContext;
 import com.lee.mvc.core.RequestHandlerChain;
 import com.lee.mvc.bean.ModelAndView;
 import lombok.extern.slf4j.Slf4j;
@@ -32,6 +32,6 @@ public class ViewRender implements Render {
         String path = mv.getView();
         Map<String, Object> model = mv.getModel();
         model.forEach(req::setAttribute);
-        req.getRequestDispatcher(MvcApplicationContext.getCONFIGURATION().getViewPath() + path).forward(req, resp);
+        req.getRequestDispatcher(ApplicationContext.getCONFIGURATION().getViewPath() + path).forward(req, resp);
     }
 }

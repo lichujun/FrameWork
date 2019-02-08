@@ -1,6 +1,6 @@
 package com.lee.mvc.core;
 
-import com.lee.mvc.handler.Handler;
+import com.lee.mvc.handler.tomcat.Handler;
 import com.lee.mvc.render.DefaultRender;
 import com.lee.mvc.render.InternalErrorRender;
 import com.lee.mvc.render.Render;

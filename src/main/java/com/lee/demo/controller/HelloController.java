@@ -4,10 +4,10 @@ import com.lee.demo.entity.Hello;
 import com.lee.ioc.annotation.Controller;
 import com.lee.ioc.annotation.Resource;
 import com.lee.mvc.annotation.RequestMapping;
-import com.lee.mvc.annotation.RequestParam;
-import com.lee.mvc.annotation.ResponseBody;
 import com.lee.demo.interfaces.IHello;
 import com.lee.demo.service.WorldService;
+import com.lee.mvc.annotation.RequestParam;
+import com.lee.mvc.bean.RequestMethod;
 
 /**
  * @author lichujun
@@ -25,15 +25,15 @@ public class HelloController {
     }
 
     @RequestMapping("/hello")
-    @ResponseBody
-    public String test() {
-        return "world sucks";
+    public Hello test(@RequestParam("word") String word) {
+        Hello h = new Hello();
+        h.setWord(word);
+        return h;
     }
 
-    @RequestMapping("/helloWorld")
-    @ResponseBody
-    public Hello test(@RequestParam("hello") String str) {
-        return new Hello(str);
+    @RequestMapping(value = "/helloWorld", method = RequestMethod.POST)
+    public Hello test(Hello hello) {
+        return hello;
     }
 
     @RequestMapping("/")

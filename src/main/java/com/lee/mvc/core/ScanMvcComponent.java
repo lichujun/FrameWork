@@ -12,11 +12,7 @@ import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 
 import java.lang.reflect.Parameter;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
+import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -27,7 +23,7 @@ import java.util.stream.Stream;
 public class ScanMvcComponent {
 
     /** 上下文信息和Controller关系集合 */
-    private static Map<PathInfo, ControllerInfo> PATH_CONTROLLER = new ConcurrentHashMap<>();
+    private static Map<PathInfo, ControllerInfo> PATH_CONTROLLER = new HashMap<>();
 
     public static ScanMvcComponent getInstance() {
         return ScanMvcComponentHolder.INSTANCE.scanMvcComponent;
@@ -109,7 +105,7 @@ public class ScanMvcComponent {
                             Map<String, Class<?>> paramMap = Optional.ofNullable(method.getParameters())
                                 .filter(ArrayUtils::isNotEmpty)
                                 .map(parameters -> {
-                                    Map<String, Class<?>> params = new HashMap<>(8);
+                                    Map<String, Class<?>> params = new LinkedHashMap<>(8);
                                     for (Parameter parameter : parameters) {
                                         String name = Optional.of(parameter)
                                             // 获取@RequestParam注入的值，参数名

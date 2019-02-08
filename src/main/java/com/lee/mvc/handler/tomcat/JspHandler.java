@@ -1,6 +1,6 @@
-package com.lee.mvc.handler;
+package com.lee.mvc.handler.tomcat;
 
-import com.lee.mvc.core.MvcApplicationContext;
+import com.lee.mvc.core.ApplicationContext;
 import com.lee.common.utils.exception.ExceptionUtils;
 import com.lee.mvc.core.RequestHandlerChain;
 
@@ -46,6 +46,6 @@ public class JspHandler implements Handler {
      * 是否为jsp资源
      */
     private boolean isPageView(String url) {
-        return url.startsWith(MvcApplicationContext.getCONFIGURATION().getViewPath());
+        return url.startsWith(ApplicationContext.getCONFIGURATION().getViewPath());
     }
 }

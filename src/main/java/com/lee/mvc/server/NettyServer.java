@@ -10,12 +10,14 @@ import io.netty.channel.socket.nio.NioServerSocketChannel;
 import io.netty.handler.codec.http.HttpObjectAggregator;
 import io.netty.handler.codec.http.HttpServerCodec;
 import io.netty.handler.codec.http.HttpServerExpectContinueHandler;
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * 以Netty做http服务器
  * @author lichujun
  * @date 2019/2/8 11:15 AM
  */
+@Slf4j
 public class NettyServer implements Server {
 
     private int port;
@@ -52,6 +54,7 @@ public class NettyServer implements Server {
         try {
             // 绑定端口，同步等待成功
             ChannelFuture channelFuture = bootstrap.bind(port).sync();
+            log.info("服务启动成功...");
             // 等待服务端监听端口关闭
             channelFuture.channel().closeFuture().sync();
         } catch (Throwable e) {

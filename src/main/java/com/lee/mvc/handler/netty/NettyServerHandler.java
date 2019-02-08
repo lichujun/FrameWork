@@ -14,8 +14,7 @@ import io.netty.handler.codec.http.multipart.InterfaceHttpData;
 import io.netty.handler.codec.http.multipart.MemoryAttribute;
 import io.netty.util.CharsetUtil;
 import org.apache.commons.collections4.MapUtils;
-
-import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -35,7 +34,7 @@ public class NettyServerHandler extends ChannelInboundHandlerAdapter {
             // 获取请求
             HttpRequest request = (HttpRequest) msg;
             // 获取post请求的raw body
-            String reqJson = ((HttpContent) msg).content().toString(Charset.forName("UTF-8"));
+            String reqJson = ((HttpContent) msg).content().toString(StandardCharsets.UTF_8);
             // 过滤浏览器的请求
             if(request.uri().equals("/favicon.ico")){
                 return;
@@ -111,7 +110,6 @@ public class NettyServerHandler extends ChannelInboundHandlerAdapter {
             }catch (Exception e){
                 e.printStackTrace();
             }
-
         } else {
             // 不支持其它方法
             throw new Exception("not support method...");

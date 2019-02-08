@@ -1,10 +1,10 @@
 package com.lee.common.utils.ioc;
 
-import com.alibaba.fastjson.JSON;
 import com.lee.ioc.core.IocAppContext;
 import com.lee.mvc.bean.ControllerInfo;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.MapUtils;
+import org.apache.commons.lang3.StringUtils;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
@@ -62,7 +62,10 @@ public class InvokeControllerUtils {
                     Object param = getParamObject(paramMap, paramName, paramClass);
                     if (param == null) {
                         try {
-                            param = JSON.parseObject(reqJson.getBytes(), paramClass);
+                            param = Optional.ofNullable(reqJson)
+                                .filter(StringUtils::isNotBlank)
+                                .map(it -> CastUtils.convert(it, paramClass))
+                                .orElse(null);
                         } catch (Throwable e) {
                             log.warn("参数反序列化出现异常", e);
                         }
@@ -96,9 +99,10 @@ public class InvokeControllerUtils {
                                          Class<?> paramClass) {
         return Optional.ofNullable(paramName)
                 .map(paramMap::get)
+                .filter(StringUtils::isNotBlank)
                 .map(it -> {
                     try {
-                        return JSON.parseObject(it.getBytes(), paramClass);
+                        return CastUtils.convert(it, paramClass);
                     } catch (Throwable e) {
                         log.warn("转换参数出现异常", e);
                         return null;

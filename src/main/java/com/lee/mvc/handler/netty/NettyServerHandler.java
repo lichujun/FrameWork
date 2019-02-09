@@ -13,6 +13,8 @@ import io.netty.handler.codec.http.multipart.HttpPostRequestDecoder;
 import io.netty.handler.codec.http.multipart.InterfaceHttpData;
 import io.netty.handler.codec.http.multipart.MemoryAttribute;
 import io.netty.util.CharsetUtil;
+import io.netty.util.ReferenceCountUtil;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.MapUtils;
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
@@ -25,16 +27,18 @@ import java.util.Optional;
  * @author lichujun
  * @date 2019/2/8 10:34 AM
  */
+@Slf4j
 public class NettyServerHandler extends ChannelInboundHandlerAdapter {
 
     @Override
-    public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
-        if (msg instanceof HttpRequest) {
+    public void channelRead(ChannelHandlerContext ctx, Object msg) {
+        try {
+            if (! (msg instanceof HttpRequest)) {
+                return;
+            }
             String content;
             // 获取请求
             HttpRequest request = (HttpRequest) msg;
-            // 获取post请求的raw body
-            String reqJson = ((HttpContent) msg).content().toString(StandardCharsets.UTF_8);
             // 过滤浏览器的请求
             if(request.uri().equals("/favicon.ico")){
                 return;
@@ -43,7 +47,6 @@ public class NettyServerHandler extends ChannelInboundHandlerAdapter {
             String path = Optional.ofNullable(request.uri())
                     .map(it -> it.split("\\?")[0])
                     .orElse("");
-            FullHttpResponse httpResponse = new DefaultFullHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.OK);
             String method = request.method().name();
             ControllerInfo controllerInfo = ScanMvcComponent.getInstance()
                     .getController(path, method);
@@ -55,6 +58,8 @@ public class NettyServerHandler extends ChannelInboundHandlerAdapter {
                     // 无参controller层方法调用
                     content = JSON.toJSONString(InvokeControllerUtils.invokeController(controllerInfo));
                 } else {
+                    // 获取post请求的raw body
+                    String reqJson = ((HttpContent) msg).content().toString(StandardCharsets.UTF_8);
                     // 有参controller层方法调用
                     Map<String, String> paramMap = parse(request);
                     content = JSON.toJSONString(InvokeControllerUtils.invokeController(
@@ -62,6 +67,7 @@ public class NettyServerHandler extends ChannelInboundHandlerAdapter {
                 }
             }
             // 写入响应
+            FullHttpResponse httpResponse = new DefaultFullHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.OK);
             httpResponse.content().writeBytes(content.getBytes());
             httpResponse.headers().set(HttpHeaderNames.CONTENT_TYPE, "application/json");
             httpResponse.headers().setInt(HttpHeaderNames.CONTENT_LENGTH, httpResponse.content().readableBytes());
@@ -72,7 +78,23 @@ public class NettyServerHandler extends ChannelInboundHandlerAdapter {
             } else {
                 ctx.writeAndFlush(httpResponse).addListener(ChannelFutureListener.CLOSE);
             }
+        } catch (Throwable e){
+            log.error("处理请求出现未知异常", e);
+        } finally {
+            ReferenceCountUtil.release(msg);
         }
+    }
+
+    @Override
+    public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) {
+        // 出现异常时关闭连接。
+        log.error("出现异常时关闭连接，出错信息", cause);
+        ctx.close();
+    }
+
+    @Override
+    public void channelReadComplete(ChannelHandlerContext ctx) {
+        ctx.flush();
     }
 
     /**

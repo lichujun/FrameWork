@@ -47,7 +47,7 @@ public final class CastUtils {
             try {
                 return JSON.parseObject(value, type);
             } catch (Throwable e) {
-                log.warn("反序列化出现异常");
+                log.warn("反序列化出现异常", e);
                 return null;
             }
         }

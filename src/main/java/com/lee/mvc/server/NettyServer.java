@@ -41,14 +41,13 @@ public class NettyServer implements Server {
                 .childHandler(new ChannelInitializer<SocketChannel>() {
                     @Override
                     protected void initChannel(SocketChannel ch) {
-                        ChannelPipeline cp = ch.pipeline();
-                        cp.addLast(new HttpServerCodec());
+                        ch.pipeline().addLast(new HttpServerCodec())
 
-                        // 处理POST消息体时需要加上
-                        cp.addLast(new HttpObjectAggregator(1024*1024));
-                        cp.addLast(new HttpServerExpectContinueHandler());
+                            // 处理POST消息体时需要加上
+                            .addLast(new HttpObjectAggregator(1024 * 1024))
+                            .addLast(new HttpServerExpectContinueHandler())
 
-                        cp.addLast(new NettyServerHandler());
+                            .addLast(new NettyServerHandler());
                     }
                 });
         try {

@@ -1,6 +1,7 @@
 package com.lee.common.utils.ioc;
 
 import lombok.Getter;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.EnumerationUtils;
 import org.apache.commons.lang3.StringUtils;
 import java.io.File;
@@ -14,6 +15,7 @@ import java.util.jar.JarFile;
  * 扫描指定包下的所有类
  * @author lichujun
  */
+@Slf4j
 public class ScanUtils {
 
     private static final String URL_PROTOCOL_JAR = "jar";
@@ -80,6 +82,7 @@ public class ScanUtils {
                 result.add(cls);
             }
         }
+        log.info("包名为{}已经扫描完毕...", packageName);
         return result;
     }
 

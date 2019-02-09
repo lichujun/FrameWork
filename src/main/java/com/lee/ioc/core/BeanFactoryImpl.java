@@ -104,26 +104,26 @@ public class BeanFactoryImpl implements BeanFactory {
         Optional.ofNullable(interfaces)
             .filter(implSet -> StringUtils.isNotBlank(beanName) && CollectionUtils.isNotEmpty(implSet))
             .ifPresent(implSet ->
-                    implSet.forEach(imp ->
-                        Optional.ofNullable(imp)
-                            .filter(StringUtils::isNotBlank)
-                            .ifPresent(i ->  Optional.ofNullable(INTERFACE_MAP.get(i))
-                                .filter(CollectionUtils::isNotEmpty)
-                                .map(impSet -> {
-                                    Optional.of(impSet)
-                                            .filter(set -> set.add(beanName))
-                                            .orElseGet(() -> {
-                                                throw new RuntimeException(String.format(
-                                                        "存在多个相同的bean名称：%s", beanName));
-                                            });
-                                    return impSet;
-                                }).orElseGet(() -> {
-                                    Set<String> impSet = new HashSet<>();
-                                    impSet.add(beanName);
-                                    // 存放到接口实现容器
-                                    INTERFACE_MAP.put(imp, impSet);
-                                    return null;
-                                }))));
+                implSet.forEach(imp ->
+                    Optional.ofNullable(imp)
+                        .filter(StringUtils::isNotBlank)
+                        .ifPresent(i ->  Optional.ofNullable(INTERFACE_MAP.get(i))
+                            .filter(CollectionUtils::isNotEmpty)
+                            .map(impSet -> {
+                                Optional.of(impSet)
+                                    .filter(set -> set.add(beanName))
+                                    .orElseGet(() -> {
+                                        throw new RuntimeException(String.format(
+                                                "存在多个相同的bean名称：%s", beanName));
+                                    });
+                                return impSet;
+                            }).orElseGet(() -> {
+                                Set<String> impSet = new HashSet<>();
+                                impSet.add(beanName);
+                                // 存放到接口实现容器
+                                INTERFACE_MAP.put(imp, impSet);
+                                return null;
+                            }))));
     }
 
     /** 实例化对象 */

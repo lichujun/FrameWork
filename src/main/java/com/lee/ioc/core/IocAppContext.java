@@ -7,6 +7,7 @@ import com.lee.ioc.annotation.Resource;
 import com.lee.ioc.bean.BeanDefinition;
 import com.lee.ioc.bean.ConstructorArg;
 import com.lee.ioc.bean.ScanPackage;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -22,6 +23,7 @@ import java.util.stream.Stream;
  * @author lichujun
  * @date 2018/12/9 10:46 AM
  */
+@Slf4j
 public class IocAppContext extends BeanFactoryImpl {
 
     private static String SCAN_PATH;
@@ -48,6 +50,7 @@ public class IocAppContext extends BeanFactoryImpl {
 
     /** 初始化自定义注解的依赖注入 */
     public void init() {
+        log.info("正在加载Bean，进行依赖注入...");
         Optional.ofNullable(loadPackages())
                 .ifPresent(this::scanPackages);
     }
@@ -70,6 +73,7 @@ public class IocAppContext extends BeanFactoryImpl {
 
     /** 扫包，进行依赖注入 */
     private void scanPackages(Set<String> packages) {
+        log.info("扫描的包名为：" + packages);
         Optional.ofNullable(packages)
                 .filter(CollectionUtils::isNotEmpty)
                 // 扫描包，将Class对象存放在Set集合
@@ -90,18 +94,22 @@ public class IocAppContext extends BeanFactoryImpl {
                                 // 将接口和bean的关系注册到容器
                                 registerInterfaceImpl(beanName, iSet);
                             }));
+                    log.info("已经将所有接口和bean的关系注册到容器中...");
                     classSet.forEach(tClass -> {
                         // 将@Component注册到容器
                         Optional.ofNullable(processComponent(tClass))
                                 .ifPresent(this::registerBean);
                     });
+                    log.info("已经将扫描到的类的数据结构与bean名称的关系存放到容器中...");
                     // 将@Resource依赖注入到Field
                     classSet.forEach(this::processFieldResource);
+                    log.info("已经将所有依赖注入到Field...");
                     // 加载所有bean
                     classSet.forEach(tClass -> Optional.ofNullable(tClass)
                             .filter(this::existInject)
                             .ifPresent(this::getBean)
                     );
+                    log.info("完成所有bean对象的加载...");
                 });
     }
 

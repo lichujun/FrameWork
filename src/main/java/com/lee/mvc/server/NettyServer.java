@@ -60,6 +60,8 @@ public class NettyServer implements Server {
                     .addListener(future -> {
                         if (future.isSuccess()) {
                             log.info("服务启动成功...");
+                        } else {
+                            log.error("端口已经被占用...");
                         }
                     }).sync();
             // 等待服务端监听端口关闭

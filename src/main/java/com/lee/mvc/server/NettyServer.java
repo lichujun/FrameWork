@@ -10,6 +10,7 @@ import io.netty.channel.socket.nio.NioServerSocketChannel;
 import io.netty.handler.codec.http.HttpObjectAggregator;
 import io.netty.handler.codec.http.HttpServerCodec;
 import io.netty.handler.codec.http.HttpServerExpectContinueHandler;
+import io.netty.util.concurrent.DefaultThreadFactory;
 import lombok.extern.slf4j.Slf4j;
 
 /**
@@ -29,15 +30,18 @@ public class NettyServer implements Server {
     @Override
     public void startServer() {
         // 服务端接收事件
-        EventLoopGroup boss = new NioEventLoopGroup();
+        EventLoopGroup boss = new NioEventLoopGroup(8,
+                new DefaultThreadFactory("boss"));
         // 服务端处理事件
-        EventLoopGroup work = new NioEventLoopGroup();
+        EventLoopGroup work = new NioEventLoopGroup(16,
+                new DefaultThreadFactory("work"));
         // 服务端引导
         ServerBootstrap bootstrap = new ServerBootstrap()
                 .group(boss, work)
                 .channel(NioServerSocketChannel.class)
-                .childOption(ChannelOption.SO_KEEPALIVE, true)
                 .option(ChannelOption.SO_BACKLOG, 1024)
+                .childOption(ChannelOption.SO_KEEPALIVE, true)
+                .childOption(ChannelOption.TCP_NODELAY, true)
                 .childHandler(new ChannelInitializer<SocketChannel>() {
                     @Override
                     protected void initChannel(SocketChannel ch) {
@@ -52,12 +56,16 @@ public class NettyServer implements Server {
                 });
         try {
             // 绑定端口，同步等待成功
-            ChannelFuture channelFuture = bootstrap.bind(port).sync();
-            log.info("服务启动成功...");
+            ChannelFuture channelFuture = bootstrap.bind(port)
+                    .addListener(future -> {
+                        if (future.isSuccess()) {
+                            log.info("服务启动成功...");
+                        }
+                    }).sync();
             // 等待服务端监听端口关闭
             channelFuture.channel().closeFuture().sync();
         } catch (Throwable e) {
-            e.printStackTrace();
+            log.error("绑定端口出现异常", e);
         } finally {
             boss.shutdownGracefully();
             work.shutdownGracefully();

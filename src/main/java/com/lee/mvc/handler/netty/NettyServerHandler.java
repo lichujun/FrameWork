@@ -6,14 +6,9 @@ import com.lee.mvc.bean.ControllerInfo;
 import com.lee.mvc.core.ScanMvcComponent;
 import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelHandlerContext;
-import io.netty.channel.ChannelInboundHandlerAdapter;
+import io.netty.channel.SimpleChannelInboundHandler;
 import io.netty.handler.codec.http.*;
-import io.netty.handler.codec.http.multipart.DefaultHttpDataFactory;
-import io.netty.handler.codec.http.multipart.HttpPostRequestDecoder;
-import io.netty.handler.codec.http.multipart.InterfaceHttpData;
-import io.netty.handler.codec.http.multipart.MemoryAttribute;
-import io.netty.util.CharsetUtil;
-import io.netty.util.ReferenceCountUtil;
+import io.netty.handler.codec.http.multipart.*;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.MapUtils;
 import java.nio.charset.StandardCharsets;
@@ -28,60 +23,51 @@ import java.util.Optional;
  * @date 2019/2/8 10:34 AM
  */
 @Slf4j
-public class NettyServerHandler extends ChannelInboundHandlerAdapter {
+public class NettyServerHandler extends SimpleChannelInboundHandler<HttpRequest> {
+
+    private static final String FAVICON_ICO = "/favicon.ico";
 
     @Override
-    public void channelRead(ChannelHandlerContext ctx, Object msg) {
-        try {
-            if (! (msg instanceof HttpRequest)) {
-                return;
-            }
-            String content;
-            // 获取请求
-            HttpRequest request = (HttpRequest) msg;
-            // 过滤浏览器的请求
-            if(request.uri().equals("/favicon.ico")){
-                return;
-            }
-            // 请求路径
-            String path = Optional.ofNullable(request.uri())
-                    .map(it -> it.split("\\?")[0])
-                    .orElse("");
-            String method = request.method().name();
-            ControllerInfo controllerInfo = ScanMvcComponent.getInstance()
-                    .getController(path, method);
-            // 如果没有controller层的信息则返回异常内容
-            if (controllerInfo == null) {
-                content = "error path, check your path and method...";
+    public void channelRead0(ChannelHandlerContext ctx, HttpRequest request) throws Exception {
+        String content;
+        // 过滤浏览器的请求
+        if(request.uri().equals(FAVICON_ICO)){
+            return;
+        }
+        // 请求路径
+        String path = Optional.ofNullable(request.uri())
+                .map(it -> it.split("\\?")[0])
+                .orElse("");
+        String method = request.method().name();
+        ControllerInfo controllerInfo = ScanMvcComponent.getInstance()
+                .getController(path, method);
+        // 如果没有controller层的信息则返回异常内容
+        if (controllerInfo == null) {
+            content = "error path, check your path and method...";
+        } else {
+            if (MapUtils.isEmpty(controllerInfo.getMethodParameter())) {
+                // 无参controller层方法调用
+                content = JSON.toJSONString(InvokeControllerUtils.invokeController(controllerInfo));
             } else {
-                if (MapUtils.isEmpty(controllerInfo.getMethodParameter())) {
-                    // 无参controller层方法调用
-                    content = JSON.toJSONString(InvokeControllerUtils.invokeController(controllerInfo));
-                } else {
-                    // 获取post请求的raw body
-                    String reqJson = ((HttpContent) msg).content().toString(StandardCharsets.UTF_8);
-                    // 有参controller层方法调用
-                    Map<String, String> paramMap = parse(request);
-                    content = JSON.toJSONString(InvokeControllerUtils.invokeController(
-                            controllerInfo, paramMap, reqJson));
-                }
+                // 获取post请求的raw body
+                String reqJson = ((HttpContent) request).content().toString(StandardCharsets.UTF_8);
+                // 有参controller层方法调用
+                Map<String, String> paramMap = parse(request);
+                content = JSON.toJSONString(InvokeControllerUtils.invokeController(
+                        controllerInfo, paramMap, reqJson));
             }
-            // 写入响应
-            FullHttpResponse httpResponse = new DefaultFullHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.OK);
-            httpResponse.content().writeBytes(content.getBytes());
-            httpResponse.headers().set(HttpHeaderNames.CONTENT_TYPE, "application/json");
-            httpResponse.headers().setInt(HttpHeaderNames.CONTENT_LENGTH, httpResponse.content().readableBytes());
-            boolean keepAlive = HttpUtil.isKeepAlive(request);
-            if (keepAlive) {
-                httpResponse.headers().set(HttpHeaderNames.CONNECTION, HttpHeaderValues.KEEP_ALIVE);
-                ctx.writeAndFlush(httpResponse);
-            } else {
-                ctx.writeAndFlush(httpResponse).addListener(ChannelFutureListener.CLOSE);
-            }
-        } catch (Throwable e){
-            log.error("处理请求出现未知异常", e);
-        } finally {
-            ReferenceCountUtil.release(msg);
+        }
+        // 写入响应
+        FullHttpResponse httpResponse = new DefaultFullHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.OK);
+        httpResponse.content().writeBytes(content.getBytes());
+        httpResponse.headers().set(HttpHeaderNames.CONTENT_TYPE, "application/json");
+        httpResponse.headers().setInt(HttpHeaderNames.CONTENT_LENGTH, httpResponse.content().readableBytes());
+        boolean keepAlive = HttpUtil.isKeepAlive(request);
+        if (keepAlive) {
+            httpResponse.headers().set(HttpHeaderNames.CONNECTION, HttpHeaderValues.KEEP_ALIVE);
+            ctx.writeAndFlush(httpResponse);
+        } else {
+            ctx.writeAndFlush(httpResponse).addListener(ChannelFutureListener.CLOSE);
         }
     }
 
@@ -114,29 +100,29 @@ public class NettyServerHandler extends ChannelInboundHandlerAdapter {
             });
         } else if (HttpMethod.POST == method) {
             // 是POST请求
-            HttpPostRequestDecoder decoder = new HttpPostRequestDecoder(
-                    new DefaultHttpDataFactory(false), request);
-            try{
-                List<InterfaceHttpData> postList = decoder.getBodyHttpDatas();
-                // 读取从客户端传过来的参数
-                for (InterfaceHttpData data : postList) {
-                    String name = data.getName();
-                    String value = null;
-                    if (InterfaceHttpData.HttpDataType.Attribute == data.getHttpDataType()) {
+            HttpPostRequestDecoder decoder = null;
+            try {
+                decoder = new HttpPostRequestDecoder(
+                        new DefaultHttpDataFactory(false), request, StandardCharsets.UTF_8);
+                List<InterfaceHttpData> postData = decoder.getBodyHttpDatas();
+                for(InterfaceHttpData data:postData){
+                    if (data.getHttpDataType() == InterfaceHttpData.HttpDataType.Attribute) {
                         MemoryAttribute attribute = (MemoryAttribute) data;
-                        attribute.setCharset(CharsetUtil.UTF_8);
-                        value = attribute.getValue();
+                        paramMap.put(attribute.getName(), attribute.getValue());
                     }
-                    paramMap.put(name, value);
                 }
             }catch (Exception e){
-                e.printStackTrace();
+                log.warn("获取post的参数发生异常", e);
+                return null;
+            } finally {
+                // 解决ByteBuf泄露的问题
+                Optional.ofNullable(decoder)
+                        .ifPresent(HttpPostRequestDecoder::destroy);
             }
         } else {
             // 不支持其它方法
             throw new Exception("not support method...");
         }
-
         return paramMap;
     }
 }

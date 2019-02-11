@@ -4,6 +4,7 @@ import com.alibaba.fastjson.JSON;
 import com.lee.common.utils.ioc.InvokeControllerUtils;
 import com.lee.mvc.bean.ControllerInfo;
 import com.lee.mvc.core.ScanMvcComponent;
+import io.netty.buffer.Unpooled;
 import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
@@ -80,7 +81,8 @@ public class NettyServerHandler extends SimpleChannelInboundHandler<HttpRequest>
 
     @Override
     public void channelReadComplete(ChannelHandlerContext ctx) {
-        ctx.flush();
+        ctx.writeAndFlush(Unpooled.EMPTY_BUFFER)
+                .addListener(ChannelFutureListener.CLOSE);
     }
 
     /**

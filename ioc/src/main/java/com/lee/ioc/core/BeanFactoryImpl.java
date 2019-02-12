@@ -56,6 +56,7 @@ public class BeanFactoryImpl implements BeanFactory {
                     return it;
                 })
                 .map(it -> Optional.of(it)
+                        .filter(local -> !local.isAnnotation())
                         .filter(this::existInject)
                         .map(this::getValue)
                         .map(this::getBean)

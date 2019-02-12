@@ -75,8 +75,9 @@ public class IocAppContext extends BeanFactoryImpl {
                     this.setClassSet(classSet);
                     classSet.forEach(tClass -> Optional.ofNullable(tClass)
                             .filter(it -> it.getInterfaces().length > 0)
+                            .filter(local -> !local.isAnnotation())
                             // 有@Component组件的才将接口和bean的关系注册到容器中
-                            .map(this::existInject)
+                            .filter(this::existInject)
                             .ifPresent(it -> {
                                 // 获取注入的值，为空则为首字母小写的简单类名
                                 String beanName = getValue(tClass);

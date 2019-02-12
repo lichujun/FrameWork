@@ -113,11 +113,11 @@ public class IocAppContext extends BeanFactoryImpl {
             .filter(this::existInject)
             .map(originClass -> {
                 Optional.of(originClass)
-                        // 过滤有多个构造方法并且要注入成组件的类，否则报错
-                        .filter(local -> local.getDeclaredConstructors().length == 1)
-                        .orElseGet(() -> {
-                            throw new RuntimeException("实例不能存在多个构造方法");
-                        });
+                    // 过滤有多个构造方法并且要注入成组件的类，否则报错
+                    .filter(local -> local.getDeclaredConstructors().length == 1)
+                    .orElseGet(() -> {
+                        throw new RuntimeException("实例不能存在多个构造方法");
+                    });
                 List<ConstructorArg> constructorArgList = Optional.of(originClass)
                     // 获取构造函数列表
                     .map(Class::getDeclaredConstructors)
@@ -168,51 +168,52 @@ public class IocAppContext extends BeanFactoryImpl {
 
     /** 将@Resource依赖注入到Field */
     private void processFieldResource(Class<?> tClass) {
-        Optional.ofNullable(tClass)
-            .filter(this::existInject)
-            // 获取Field参数列表
-            .map(Class::getDeclaredFields)
-            .ifPresent(fields -> {
-                for (Field field : fields) {
-                    Optional.ofNullable(field)
-                        // 获取@Resource注解
-                        .map(it -> it.getDeclaredAnnotation(Resource.class))
-                        .ifPresent(resource ->
-                            // 获取Field的类名
-                            Optional.of(field).map(Field::getType)
-                                .ifPresent(fieldClass ->
-                                    Optional.of(fieldClass)
-                                        // 判断Field是否为接口
-                                        .filter(Class::isInterface)
-                                        .map(it -> {
-                                            // 查找接口的多个实现
-                                            Set<String> impSet = getInterfaceImpl(fieldClass.getName());
-                                            Optional.of(resource.value())
-                                                // 如果接口只有一个实现或者@Resource有指定bean则注入bean，否则报错
-                                                .filter(v -> impSet.size() == 1 || StringUtils.isNotBlank(v))
-                                                .map(fieldBeanName -> {
-                                                    // 注入Field
-                                                    injectField(tClass, fieldBeanName, field);
-                                                    return fieldBeanName;
-                                                }).orElseGet(() -> {
-                                                        throw new RuntimeException(fieldClass
-                                                        + "接口有多个实现，请指定bean名称");
-                                                });
-                                            return it;
-                                        }).orElseGet(() -> {
-                                            Optional.of(fieldClass)
-                                                // 如果Field是类，则直接通过此类的bean名称获取bean
-                                                .map(it -> getValue(fieldClass))
-                                                .ifPresent(fieldBeanName ->
-                                                        // 注入Field
-                                                        injectField(tClass, fieldBeanName, field)
-                                                );
-                                            return null;
-                                        })
-                                )
-                        );
+        if (tClass == null || !existInject(tClass)) {
+            return;
+        }
+        Field[] fields = tClass.getDeclaredFields();
+        if (fields == null || ArrayUtils.isEmpty(fields)) {
+            return;
+        }
+        for (Field field : fields) {
+            Resource resource = field.getDeclaredAnnotation(Resource.class);
+            if (field.getDeclaredAnnotation(Resource.class) == null) {
+                continue;
+            }
+            // 获取Field的类名
+            Class<?> fieldClass = field.getType();
+            if (fieldClass == null) {
+                continue;
+            }
+            // 判断Field是否为接口
+            if (fieldClass.isInterface()) {
+                // 查找接口的多个实现
+                Set<String> impSet = getInterfaceImpl(fieldClass.getName());
+                if (CollectionUtils.isEmpty(impSet)) {
+                    throw new RuntimeException(fieldClass
+                            + "接口没有实现，请对该接口的类进行实例化");
                 }
-            });
+                Optional.of(resource.value())
+                        // 如果接口只有一个实现或者@Resource有指定bean则注入bean，否则报错
+                        .filter(v -> impSet.size() == 1 || StringUtils.isNotBlank(v))
+                        .map(fieldBeanName -> {
+                            // 注入Field
+                            injectField(tClass, fieldBeanName, field);
+                            return fieldBeanName;
+                        }).orElseGet(() -> {
+                    throw new RuntimeException(fieldClass
+                            + "接口有多个实现，请指定bean名称");
+                });
+            } else {
+                Optional.of(fieldClass)
+                        // 如果Field是类，则直接通过此类的bean名称获取bean
+                        .map(it -> getValue(fieldClass))
+                        .ifPresent(fieldBeanName ->
+                                // 注入Field
+                                injectField(tClass, fieldBeanName, field)
+                        );
+            }
+        }
     }
 
     /**

@@ -1,2 +1,4 @@
 scanPackages:
-  - com.lee.demo
+  - com.lee.demo.controller
+  - com.lee.demo.service
+  - com.lee.demo.repository

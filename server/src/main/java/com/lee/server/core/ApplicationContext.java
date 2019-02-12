@@ -9,6 +9,8 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
+import java.util.Optional;
+
 /**
  * @author lichujun
  * @date 2018/12/15 10:40
@@ -56,16 +58,18 @@ public class ApplicationContext {
     private void start(ServerConfiguration configuration) {
         try {
             ApplicationContext.CONFIGURATION = configuration;
-            IocAppContext.initScanPath(configuration.getScanPath());
             IocAppContext context = IocAppContext.getInstance();
-            context.init();
+            // 加载扫描包路径
+            Optional.ofNullable(configuration.getScanPath())
+                    .map(it -> configuration.getBootClass().getClassLoader().getResourceAsStream(it))
+                    .ifPresent(context::init);
             ScanMvcComponent scanMvcComponent = ScanMvcComponent.getInstance();
             scanMvcComponent.init(context);
             // SERVER = new TomcatServer(configuration);
             SERVER = new NettyServer(configuration);
             SERVER.startServer();
         } catch (Exception e) {
-            log.error("Doodle 启动失败", e);
+            log.error("服务器启动失败", e);
         }
     }
 }

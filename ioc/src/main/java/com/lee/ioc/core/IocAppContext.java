@@ -13,6 +13,7 @@ import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.yaml.snakeyaml.Yaml;
 
+import java.io.InputStream;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.util.*;
@@ -26,13 +27,6 @@ import java.util.stream.Stream;
  */
 @Slf4j
 public class IocAppContext extends BeanFactoryImpl {
-
-    private static String SCAN_PATH;
-
-    /** 初始化扫描包的配置文件 */
-    public static void initScanPath(String fileName) {
-        SCAN_PATH = fileName;
-    }
 
     private enum IocAppHolder {
         // 单例
@@ -50,19 +44,16 @@ public class IocAppContext extends BeanFactoryImpl {
     }
 
     /** 初始化自定义注解的依赖注入 */
-    public void init() {
+    public void init(InputStream yamlStream) {
         log.info("正在加载Bean，进行依赖注入...");
-        Optional.ofNullable(loadPackages())
+        Optional.ofNullable(loadPackages(yamlStream))
                 .ifPresent(this::scanPackages);
     }
 
     /** 加载yaml配置文件，获取包名 */
-    private Set<String> loadPackages() {
+    private Set<String> loadPackages(InputStream yamlStream) {
         Yaml yaml = new Yaml();
-        return Optional.ofNullable(SCAN_PATH)
-                .filter(StringUtils::isNotBlank)
-                // 通过加载器将yaml文件加载成流
-                .map(it -> Thread.currentThread().getContextClassLoader().getResourceAsStream(it))
+        return Optional.ofNullable(yamlStream)
                 .map(is -> yaml.loadAs(is, ScanPackage.class))
                 // 获取包名集合
                 .map(ScanPackage::getScanPackages)

@@ -1,18 +1,18 @@
 package com.lee.ioc.core;
 
+import com.alibaba.fastjson.JSONObject;
 import com.lee.common.utils.exception.ExceptionUtils;
+import com.lee.ioc.annotation.Configuration;
 import com.lee.ioc.utils.ReflectionUtils;
 import com.lee.ioc.utils.ScanUtils;
 import com.lee.ioc.annotation.Resource;
 import com.lee.ioc.bean.BeanDefinition;
 import com.lee.ioc.bean.ConstructorArg;
-import com.lee.ioc.bean.ScanPackage;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.yaml.snakeyaml.Yaml;
-
 import java.io.InputStream;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
@@ -43,28 +43,31 @@ public class IocAppContext extends BeanFactoryImpl {
         return IocAppHolder.INSTANCE.context;
     }
 
-    /** 初始化自定义注解的依赖注入 */
-    public void init(InputStream yamlStream) {
+    /**
+     * 初始化自定义注解的依赖注入
+     * 加载yaml配置文件，获取包名
+     */
+    public void init(String path, String scanPackage, Class<?> tClass) {
+        if (StringUtils.isBlank(path) || tClass == null) {
+            return;
+        }
+        InputStream yamlStream = tClass.getClassLoader().getResourceAsStream(path);
+        if (yamlStream == null) {
+            return;
+        }
         log.info("正在加载Bean，进行依赖注入...");
-        Optional.ofNullable(loadPackages(yamlStream))
-                .ifPresent(this::scanPackages);
-    }
-
-    /** 加载yaml配置文件，获取包名 */
-    private Set<String> loadPackages(InputStream yamlStream) {
         Yaml yaml = new Yaml();
-        return Optional.ofNullable(yamlStream)
-                .map(is -> yaml.loadAs(is, ScanPackage.class))
-                // 获取包名集合
-                .map(ScanPackage::getScanPackages)
-                // 包名Set集合
+        Map<String, Object> yamlMap = yaml.load(yamlStream);
+        JSONObject yamlJson = new JSONObject(yamlMap);
+        Optional.of(yamlJson)
+                .map(it -> it.getJSONArray(scanPackage))
+                .map(arr -> arr.toJavaList(String.class))
                 .map(HashSet::new)
-                .orElse(null);
-
+                .ifPresent(it -> scanPackages(it, yamlJson));
     }
 
     /** 扫包，进行依赖注入 */
-    private void scanPackages(Set<String> packages) {
+    private void scanPackages(Set<String> packages, JSONObject yamlJson) {
         log.info("扫描的包名为：" + packages);
         Optional.ofNullable(packages)
                 .filter(CollectionUtils::isNotEmpty)
@@ -73,27 +76,30 @@ public class IocAppContext extends BeanFactoryImpl {
                 .filter(CollectionUtils::isNotEmpty)
                 .ifPresent(classSet -> {
                     this.setClassSet(classSet);
-                    classSet.forEach(tClass -> Optional.ofNullable(tClass)
-                            .filter(it -> it.getInterfaces().length > 0)
-                            .filter(local -> !local.isAnnotation())
-                            // 有@Component组件的才将接口和bean的关系注册到容器中
-                            .filter(this::existInject)
-                            .ifPresent(it -> {
-                                // 获取注入的值，为空则为首字母小写的简单类名
-                                String beanName = getValue(tClass);
-                                // 获取该类所实现的所有接口
-                                Set<String> iSet = Stream.of(tClass.getInterfaces())
-                                        .map(Class::getName).collect(Collectors.toSet());
-                                // 将接口和bean的关系注册到容器
-                                registerInterfaceImpl(beanName, iSet);
-                            }));
-                    log.info("已经将所有接口和bean的关系注册到容器中...");
-                    classSet.forEach(tClass -> {
+                    for (Class<?> tClass : classSet) {
+                        if (tClass == null) {
+                            continue;
+                        }
+                        Optional.of(tClass)
+                                .filter(it -> it.getInterfaces().length > 0)
+                                .filter(local -> !local.isAnnotation())
+                                // 有@Component组件的才将接口和bean的关系注册到容器中
+                                .filter(this::existInject)
+                                .ifPresent(it -> {
+                                    // 获取注入的值，为空则为首字母小写的简单类名
+                                    String beanName = getValue(tClass);
+                                    // 获取该类所实现的所有接口
+                                    Set<String> iSet = Stream.of(tClass.getInterfaces())
+                                            .map(Class::getName).collect(Collectors.toSet());
+                                    // 将接口和bean的关系注册到容器
+                                    registerInterfaceImpl(beanName, iSet);
+                                });
                         // 将@Component注册到容器
                         Optional.ofNullable(processComponent(tClass))
                                 .ifPresent(this::registerBean);
-                    });
-                    log.info("已经将扫描到的类的数据结构与bean名称的关系存放到容器中...");
+                        // 加载配置文件
+                        loadConfiguration(tClass, yamlJson);
+                    }
                     // 将@Resource依赖注入到Field
                     classSet.forEach(this::processFieldResource);
                     log.info("已经将所有依赖注入到Field...");
@@ -108,62 +114,61 @@ public class IocAppContext extends BeanFactoryImpl {
 
     /** 获取@Component的BeanDefinition */
     private BeanDefinition processComponent(Class<?> tClass) {
-        return Optional.ofNullable(tClass)
-            // 获取@Component注解
-            .filter(this::existInject)
-            .map(originClass -> {
-                Optional.of(originClass)
-                    // 过滤有多个构造方法并且要注入成组件的类，否则报错
-                    .filter(local -> local.getDeclaredConstructors().length == 1)
-                    .orElseGet(() -> {
-                        throw new RuntimeException("实例不能存在多个构造方法");
+        if (tClass == null || !existInject(tClass)) {
+            return null;
+        }
+        Optional.of(tClass)
+                // 过滤有多个构造方法并且要注入成组件的类，否则报错
+                .filter(local -> local.getDeclaredConstructors().length == 1)
+                .orElseGet(() -> {
+                    throw new RuntimeException("实例不能存在多个构造方法");
+                });
+        List<ConstructorArg> constructorArgList = Optional.of(tClass)
+                // 获取构造函数列表
+                .map(Class::getDeclaredConstructors)
+                // 获取唯一的构造函数
+                .map(cons -> cons[0])
+                // 获取构造函数的参数列表
+                .map(Constructor::getParameters)
+                .filter(ArrayUtils::isNotEmpty)
+                .map(parameters -> {
+                    // 获取构造函数的参数和注入的值
+                    List<ConstructorArg> constructorArgs = new ArrayList<>();
+                    Stream.of(parameters).forEach(parameter -> {
+                        // 获取注入实例的名称，构造函数里的所有参数都需@Resource注入实例
+                        Class<?> paramClass = parameter.getType();
+                        String paramClassName = paramClass.getName();
+                        // 获取构造函数的参数的注解
+                        Resource paramResource = parameter.getDeclaredAnnotation(Resource.class);
+                        Optional.of(paramClass)
+                            // 判断是参数否是接口
+                            .filter(Class::isInterface)
+                            .map(pClass -> {
+                                // 获取接口的所有实现
+                                Set<String> impSet = getInterfaceImpl(paramClass.getName());
+                                Optional.of(paramResource.value())
+                                        // 如果接口只有一个实现或者@Resource有指定bean则注入bean，否则报错
+                                    .filter(value -> impSet.size() == 1 || StringUtils.isNotBlank(value))
+                                    .map(value -> {
+                                        constructorArgs.add(new ConstructorArg(value, paramClassName));
+                                        return value;
+                                    }).orElseGet(() -> {
+                                        throw new RuntimeException(pClass
+                                                + "接口有多个实现，请指定bean名称");
+                                    });
+                                return pClass;
+                            }).orElseGet(() -> {
+                                // 如果参数是类，则直接通过此类的bean名称获取bean
+                                String value = getValue(paramClass);
+                                constructorArgs.add(new ConstructorArg(value, paramClassName));
+                                return null;
+                            });
                     });
-                List<ConstructorArg> constructorArgList = Optional.of(originClass)
-                    // 获取构造函数列表
-                    .map(Class::getDeclaredConstructors)
-                    // 获取唯一的构造函数
-                    .map(cons -> cons[0])
-                    // 获取构造函数的参数列表
-                    .map(Constructor::getParameters)
-                    .filter(ArrayUtils::isNotEmpty)
-                    .map(parameters -> {
-                        // 获取构造函数的参数和注入的值
-                        List<ConstructorArg> constructorArgs = new ArrayList<>();
-                        Stream.of(parameters).forEach(parameter -> {
-                            // 获取注入实例的名称，构造函数里的所有参数都需@Resource注入实例
-                            Class<?> paramClass = parameter.getType();
-                            String paramClassName = paramClass.getName();
-                            // 获取构造函数的参数的注解
-                            Resource paramResource = parameter.getDeclaredAnnotation(Resource.class);
-                            Optional.of(paramClass)
-                                // 判断是参数否是接口
-                                .filter(Class::isInterface)
-                                .map(pClass -> {
-                                    // 获取接口的所有实现
-                                    Set<String> impSet = getInterfaceImpl(paramClass.getName());
-                                    Optional.of(paramResource.value())
-                                            // 如果接口只有一个实现或者@Resource有指定bean则注入bean，否则报错
-                                        .filter(value -> impSet.size() == 1 || StringUtils.isNotBlank(value))
-                                        .map(value -> {
-                                            constructorArgs.add(new ConstructorArg(value, paramClassName));
-                                            return value;
-                                        }).orElseGet(() -> {
-                                            throw new RuntimeException(pClass
-                                                    + "接口有多个实现，请指定bean名称");
-                                        });
-                                    return pClass;
-                                }).orElseGet(() -> {
-                                    // 如果参数是类，则直接通过此类的bean名称获取bean
-                                    String value = getValue(paramClass);
-                                    constructorArgs.add(new ConstructorArg(value, paramClassName));
-                                    return null;
-                                });
-                        });
-                        return constructorArgs;
-                    }).orElse(null);
-                // 创建BeanDefinition对象以用来注册实例
-                return createBeanDefinition(getValue(originClass), originClass, constructorArgList);
-            }).orElse(null);
+                    return constructorArgs;
+                })
+                .orElse(null);
+        // 创建BeanDefinition对象以用来注册实例
+        return createBeanDefinition(getValue(tClass), tClass, constructorArgList);
     }
 
     /** 将@Resource依赖注入到Field */
@@ -259,6 +264,35 @@ public class IocAppContext extends BeanFactoryImpl {
                                         "不存在名称为%s的bean", fieldBeanName));
                             });
                 });
+    }
+
+    /** 加载配置文件 */
+    private void loadConfiguration(Class<?> tClass, JSONObject yamlJson) {
+        Configuration configuration = Optional.ofNullable(tClass)
+                .map(it -> it.getDeclaredAnnotation(Configuration.class))
+                .orElse(null);
+        if (configuration == null) {
+            return;
+        }
+        String value = Optional.ofNullable(configuration)
+                .map(Configuration::value)
+                .filter(StringUtils::isNotBlank)
+                .orElse(null);
+        if (value == null) {
+            throw new RuntimeException(tClass + "配置文件注入的值为空");
+        }
+        String[] arr = value.split("\\.");
+        JSONObject json = yamlJson;
+        for (String name : arr) {
+            json = json.getJSONObject(name);
+        }
+        Object confObj = Optional.ofNullable(json)
+                .map(it -> it.toJavaObject(tClass))
+                .orElse(null);
+        if (confObj == null) {
+            throw new RuntimeException(tClass + "加载配置文件出现异常");
+        }
+        injectConfiguration(tClass, confObj);
     }
 
 }

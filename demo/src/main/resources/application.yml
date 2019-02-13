@@ -1,0 +1,12 @@
+server:
+  port: 9000
+
+scanPackages:
+  - com.lee.server.controller
+  - com.lee.server.service
+  - com.lee.server.repository
+  - com.lee.server.conf
+
+demo:
+  conf:
+    name: hello

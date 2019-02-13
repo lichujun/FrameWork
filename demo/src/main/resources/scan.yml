@@ -1,4 +1,0 @@
-scanPackages:
-  - com.lee.server.controller
-  - com.lee.server.service
-  - com.lee.server.repository

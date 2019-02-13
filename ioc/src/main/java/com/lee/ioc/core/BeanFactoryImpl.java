@@ -1,12 +1,9 @@
 package com.lee.ioc.core;
 
 import com.lee.common.utils.exception.ExceptionUtils;
+import com.lee.ioc.annotation.*;
 import com.lee.ioc.utils.BeanUtils;
 import com.lee.ioc.utils.ClassUtils;
-import com.lee.ioc.annotation.Component;
-import com.lee.ioc.annotation.Controller;
-import com.lee.ioc.annotation.Repository;
-import com.lee.ioc.annotation.Service;
 import com.lee.ioc.bean.BeanDefinition;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -192,7 +189,10 @@ public class BeanFactoryImpl implements BeanFactory {
                     .orElseGet(() -> Optional.ofNullable(tClass.getDeclaredAnnotation(Repository.class))
                         // 获取Repository注解注入的值
                         .map(Repository::value)
+                        .orElseGet(() -> Optional.ofNullable(tClass.getDeclaredAnnotation(Configuration.class))
+                        .map(it -> StringUtils.uncapitalize(tClass.getSimpleName()))
                         .orElse(null)
+                        )
                     )
                 ));
         // 将注解值为空时将bean的名称设置为首字母小写的简单类名
@@ -200,7 +200,7 @@ public class BeanFactoryImpl implements BeanFactory {
                 .map(value -> StringUtils.isNotBlank(value) ? value :
                         StringUtils.uncapitalize(tClass.getSimpleName()))
                 .orElseGet(() -> {
-                    throw new RuntimeException("注入组件未标注注解");
+                    throw new RuntimeException(tClass + "注入组件未标注注解");
                 });
     }
 
@@ -224,6 +224,19 @@ public class BeanFactoryImpl implements BeanFactory {
                         .filter(it -> it.isAnnotationPresent(annotation))
                         .collect(Collectors.toSet())
                 ).orElse(null);
+    }
+
+    /**
+     * 注入配置文件
+     */
+    void injectConfiguration(Class<?> tClass, Object t) {
+        if (tClass == null || t == null) {
+            return ;
+        }
+        String classSimpleName = StringUtils.uncapitalize(tClass.getSimpleName());
+        if (BEAN_MAP.put(classSimpleName, t) != null) {
+            throw new RuntimeException(tClass + "配置文件的类名存在相同的，注入配置文件失败");
+        }
     }
 
 }

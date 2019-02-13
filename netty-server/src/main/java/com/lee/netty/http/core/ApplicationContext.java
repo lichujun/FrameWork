@@ -48,7 +48,7 @@ public class ApplicationContext {
     /**
      * 启动
      */
-    private static void run(ServerConfiguration configuration) {
+    public static void run(ServerConfiguration configuration) {
         new ApplicationContext().start(configuration);
     }
 
@@ -60,9 +60,8 @@ public class ApplicationContext {
             ApplicationContext.CONFIGURATION = configuration;
             IocAppContext context = IocAppContext.getInstance();
             // 加载扫描包路径
-            Optional.ofNullable(configuration.getScanPath())
-                    .map(it -> configuration.getBootClass().getClassLoader().getResourceAsStream(it))
-                    .ifPresent(context::init);
+            context.init(configuration.getScanPath(), configuration.getScanPackage(),
+                    configuration.getBootClass());
             ScanMvcComponent scanMvcComponent = ScanMvcComponent.getInstance();
             scanMvcComponent.init(context);
             SERVER = new NettyStartServer(configuration);

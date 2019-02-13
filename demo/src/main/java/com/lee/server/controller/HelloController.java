@@ -1,5 +1,7 @@
 package com.lee.server.controller;
 
+import com.lee.server.conf.DemoConf;
+import com.lee.server.conf.ServerConf;
 import com.lee.server.entity.Hello;
 import com.lee.server.interfaces.IHello;
 import com.lee.server.service.WorldService;
@@ -16,6 +18,12 @@ import com.lee.netty.http.bean.RequestMethod;
 @Controller
 public class HelloController {
 
+    @Resource
+    private DemoConf demoConf;
+
+    @Resource
+    private ServerConf serverConf;
+
     @Resource("helloService")
     private IHello helloService;
     private final IHello worldService;
@@ -27,7 +35,11 @@ public class HelloController {
     @RequestMapping("/hello")
     public Hello test(@RequestParam("word") String word) {
         Hello h = new Hello();
-        h.setWord(word);
+        if (word == null) {
+            h.setWord(demoConf.getName() + "-" + serverConf.getPort());
+        } else {
+            h.setWord(word);
+        }
         return h;
     }
 

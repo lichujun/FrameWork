@@ -8,6 +8,4 @@ package com.lee.server.server;
 public interface Server {
 
     void startServer() throws Exception;
-
-    void stopServer() throws Exception;
 }

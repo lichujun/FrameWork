@@ -65,7 +65,6 @@ public class ApplicationContext {
                     .ifPresent(context::init);
             ScanMvcComponent scanMvcComponent = ScanMvcComponent.getInstance();
             scanMvcComponent.init(context);
-            // SERVER = new TomcatServer(configuration);
             SERVER = new NettyServer(configuration);
             SERVER.startServer();
         } catch (Exception e) {

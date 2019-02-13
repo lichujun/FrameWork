@@ -1,7 +1,7 @@
 package com.lee.server.server;
 
 import com.lee.conf.ServerConfiguration;
-import com.lee.server.handler.netty.NettyServerHandler;
+import com.lee.server.handler.NettyServerHandler;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelInitializer;
@@ -75,10 +75,5 @@ public class NettyServer implements Server {
             boss.shutdownGracefully();
             work.shutdownGracefully();
         }
-    }
-
-    @Override
-    public void stopServer() {
-
     }
 }

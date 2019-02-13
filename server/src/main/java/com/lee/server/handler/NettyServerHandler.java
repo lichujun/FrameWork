@@ -1,4 +1,4 @@
-package com.lee.server.handler.netty;
+package com.lee.server.handler;
 
 import com.alibaba.fastjson.JSON;
 import com.lee.server.bean.ControllerInfo;

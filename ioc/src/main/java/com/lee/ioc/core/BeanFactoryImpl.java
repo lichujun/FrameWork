@@ -45,24 +45,20 @@ public class BeanFactoryImpl implements BeanFactory {
 
     @Override
     public <T> T getBean(Class<T> tClass) {
-        return Optional.ofNullable(tClass)
-                .map(it -> {
-                    Optional.of(it)
-                            .filter(Class::isInterface)
-                            .ifPresent(t -> {
-                                throw new RuntimeException(t
-                                        + "是接口，不能实例化");
-                            });
-                    return it;
-                })
-                .map(it -> Optional.of(it)
-                        .filter(local -> !local.isAnnotation())
-                        .filter(this::existInject)
-                        .map(this::getValue)
-                        .map(this::getBean)
-                        .map(tClass::cast)
-                        .orElse(null)
-                ).orElse(null);
+        if (tClass == null) {
+            return null;
+        }
+        if (tClass.isInterface()) {
+            throw new RuntimeException(tClass + "是接口，不能实例化");
+        }
+        return Optional.of(tClass)
+                .filter(local -> !local.isAnnotation()
+                        && existInject(local)
+                )
+                .map(this::getValue)
+                .map(this::getBean)
+                .map(tClass::cast)
+                .orElse(null);
     }
 
     /**
@@ -82,17 +78,15 @@ public class BeanFactoryImpl implements BeanFactory {
     public void registerBean(BeanDefinition beanDefinition) {
         Optional.ofNullable(beanDefinition)
             // 过滤没有bean名称或类名的BeanDefinition
-            .filter(it -> StringUtils.isNotBlank(it.getName()))
-            .filter(it -> StringUtils.isNotBlank(it.getClassName()))
-            .ifPresent(beanDef ->
-                Optional.of(beanDef)
-                    .filter(it -> BEAN_DEFINITION_MAP.put(it.getName(), it) == null)
-                    .orElseGet(() -> {
-                        throw new RuntimeException(String.format("存在多个相同的bean名称：%s",
-                                beanDefinition.getName()));
-                    })
+            .filter(it ->
+                    StringUtils.isNotBlank(it.getName())
+                    && StringUtils.isNotBlank(it.getClassName())
+                    && BEAN_DEFINITION_MAP.put(it.getName(), it) == null
             )
-            ;
+            .orElseGet(() -> {
+                throw new RuntimeException(String.format("存在多个相同的bean名称：%s",
+                        Objects.requireNonNull(beanDefinition).getName()));
+            });
     }
 
     /**
@@ -102,29 +96,30 @@ public class BeanFactoryImpl implements BeanFactory {
      */
     @Override
     public void registerInterfaceImpl(String beanName, Set<String> interfaces) {
-        Optional.ofNullable(interfaces)
-            .filter(implSet -> StringUtils.isNotBlank(beanName) && CollectionUtils.isNotEmpty(implSet))
-            .ifPresent(implSet ->
-                implSet.forEach(imp ->
-                    Optional.ofNullable(imp)
-                        .filter(StringUtils::isNotBlank)
-                        .ifPresent(i ->  Optional.ofNullable(INTERFACE_MAP.get(i))
-                            .filter(CollectionUtils::isNotEmpty)
-                            .map(impSet -> {
-                                Optional.of(impSet)
-                                    .filter(set -> set.add(beanName))
-                                    .orElseGet(() -> {
-                                        throw new RuntimeException(String.format(
-                                                "存在多个相同的bean名称：%s", beanName));
-                                    });
-                                return impSet;
-                            }).orElseGet(() -> {
-                                Set<String> impSet = new HashSet<>();
-                                impSet.add(beanName);
-                                // 存放到接口实现容器
-                                INTERFACE_MAP.put(imp, impSet);
-                                return null;
-                            }))));
+        if (CollectionUtils.isEmpty(interfaces) || StringUtils.isBlank(beanName)) {
+            return;
+        }
+        for (String imp : interfaces) {
+            if (StringUtils.isBlank(imp)) {
+                continue;
+            }
+            Set<String> impSet = INTERFACE_MAP.get(imp);
+            if (CollectionUtils.isNotEmpty(impSet)) {
+                Optional.of(impSet)
+                        .filter(set -> set.add(beanName))
+                        .orElseGet(() -> {
+                            throw new RuntimeException(String.format(
+                                    "存在多个相同的bean名称：%s", beanName));
+                        });
+            } else {
+                if (impSet == null) {
+                    impSet = new HashSet<>();
+                }
+                impSet.add(beanName);
+                // 存放到接口实现容器
+                INTERFACE_MAP.put(imp, impSet);
+            }
+        }
     }
 
     /** 实例化对象 */
@@ -135,7 +130,7 @@ public class BeanFactoryImpl implements BeanFactory {
             // 通过反射获取需要创建的实体的Class对象
             .map(ExceptionUtils.handleFunction(ClassUtils::loadClass))
             // 如果有构造函数，就反射获取构造函数创建实例，如果不是就通过Class对象创建实例
-            .map(it -> Optional.ofNullable(beanDefinition)
+            .map(it -> Optional.of(Objects.requireNonNull(beanDefinition))
                 .map(BeanDefinition::getConstructorArgs)
                 // 过滤构造函数参数为空的构造函数
                 .filter(CollectionUtils::isNotEmpty)
@@ -185,20 +180,16 @@ public class BeanFactoryImpl implements BeanFactory {
     /** 获取@Component等注入bean的名称 */
     String getValue(Class<?> tClass) {
         // 获取注解注入的值
-        String annotationValue =  Optional.ofNullable(
-                tClass.getDeclaredAnnotation(Component.class))
+        String annotationValue =  Optional.ofNullable(tClass.getDeclaredAnnotation(Component.class))
             // 获取Component注解注入的值
             .map(Component::value)
-            .orElseGet(() -> Optional.ofNullable(
-                tClass.getDeclaredAnnotation(Controller.class))
+            .orElseGet(() -> Optional.ofNullable(tClass.getDeclaredAnnotation(Controller.class))
                 // 获取Controller注解注入的值
                 .map(Controller::value)
-                .orElseGet(() -> Optional.ofNullable(
-                    tClass.getDeclaredAnnotation(Service.class))
+                .orElseGet(() -> Optional.ofNullable(tClass.getDeclaredAnnotation(Service.class))
                     // 获取Service注解注入的值
                     .map(Service::value)
-                    .orElseGet(() -> Optional.ofNullable(
-                        tClass.getDeclaredAnnotation(Repository.class))
+                    .orElseGet(() -> Optional.ofNullable(tClass.getDeclaredAnnotation(Repository.class))
                         // 获取Repository注解注入的值
                         .map(Repository::value)
                         .orElse(null)

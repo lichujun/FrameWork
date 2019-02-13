@@ -96,7 +96,7 @@ public class ScanMvcComponent {
         // 扫描所有方法的RequestMapping注解
         for (Method method : methodList) {
             RequestMapping reqMapping = Optional.ofNullable(method)
-                    .filter(it -> Void.TYPE.equals(it.getReturnType()))
+                    .filter(it -> !Void.TYPE.equals(it.getReturnType()))
                     .map(it -> it.getDeclaredAnnotation(RequestMapping.class))
                     .orElse(null);
             if (reqMapping == null) {

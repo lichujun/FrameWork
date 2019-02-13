@@ -11,7 +11,7 @@
 
     <modules>
         <module>ioc</module>
-        <module>server</module>
+        <module>netty-server</module>
         <module>common</module>
         <module>demo</module>
     </modules>
@@ -45,7 +45,7 @@
 
             <dependency>
                 <groupId>com.lee</groupId>
-                <artifactId>server</artifactId>
+                <artifactId>netty-server</artifactId>
                 <version>${project.version}</version>
             </dependency>
 

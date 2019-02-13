@@ -1,8 +1,8 @@
 package com.lee.ioc.core;
 
 import com.lee.common.utils.exception.ExceptionUtils;
-import com.lee.common.utils.ioc.ReflectionUtils;
-import com.lee.common.utils.ioc.ScanUtils;
+import com.lee.ioc.utils.ReflectionUtils;
+import com.lee.ioc.utils.ScanUtils;
 import com.lee.ioc.annotation.Resource;
 import com.lee.ioc.bean.BeanDefinition;
 import com.lee.ioc.bean.ConstructorArg;

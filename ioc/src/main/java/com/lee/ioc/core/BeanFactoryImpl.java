@@ -1,8 +1,8 @@
 package com.lee.ioc.core;
 
 import com.lee.common.utils.exception.ExceptionUtils;
-import com.lee.common.utils.ioc.BeanUtils;
-import com.lee.common.utils.ioc.ClassUtils;
+import com.lee.ioc.utils.BeanUtils;
+import com.lee.ioc.utils.ClassUtils;
 import com.lee.ioc.annotation.Component;
 import com.lee.ioc.annotation.Controller;
 import com.lee.ioc.annotation.Repository;

@@ -2,6 +2,7 @@ package com.lee.netty.http.conf;
 
 import lombok.Builder;
 import lombok.Getter;
+import lombok.Setter;
 
 /**
  * 服务器相关配置
@@ -10,6 +11,7 @@ import lombok.Getter;
  */
 @Builder
 @Getter
+@Setter
 public class ServerConfiguration {
 
     private Class<?> bootClass;

@@ -47,13 +47,13 @@ public class IocAppContext extends BeanFactoryImpl {
      * 初始化自定义注解的依赖注入
      * 加载yaml配置文件，获取包名
      */
-    public void init(String path, String scanPackage, Class<?> tClass) {
+    public JSONObject init(String path, String scanPackage, Class<?> tClass) {
         if (StringUtils.isBlank(path) || tClass == null) {
-            return;
+            return null;
         }
         InputStream yamlStream = tClass.getClassLoader().getResourceAsStream(path);
         if (yamlStream == null) {
-            return;
+            return null;
         }
         log.info("正在加载Bean，进行依赖注入...");
         Yaml yaml = new Yaml();
@@ -64,6 +64,7 @@ public class IocAppContext extends BeanFactoryImpl {
                 .map(arr -> arr.toJavaList(String.class))
                 .map(HashSet::new)
                 .ifPresent(it -> scanPackages(it, yamlJson));
+        return yamlJson;
     }
 
     /** 扫包，进行依赖注入 */
@@ -268,30 +269,35 @@ public class IocAppContext extends BeanFactoryImpl {
 
     /** 加载配置文件 */
     private void loadConfiguration(Class<?> tClass, JSONObject yamlJson) {
+        // 获取Configuration注解
         Configuration configuration = Optional.ofNullable(tClass)
                 .map(it -> it.getDeclaredAnnotation(Configuration.class))
                 .orElse(null);
         if (configuration == null) {
             return;
         }
-        String value = Optional.ofNullable(configuration)
+        // 获取注解注入的值
+        String value = Optional.of(configuration)
                 .map(Configuration::value)
                 .filter(StringUtils::isNotBlank)
                 .orElse(null);
         if (value == null) {
-            throw new RuntimeException(tClass + "配置文件注入的值为空");
+            injectConfiguration(tClass, null);
+            return;
         }
         String[] arr = value.split("\\.");
+        // 获取json配置文件
         JSONObject json = yamlJson;
-        for (String name : arr) {
-            json = json.getJSONObject(name);
+        try {
+            for (String name : arr) {
+                json = json.getJSONObject(name);
+            }
+        } catch (Exception e) {
+            throw new RuntimeException(tClass + "获取配置文件发生异常，请检查参数");
         }
         Object confObj = Optional.ofNullable(json)
                 .map(it -> it.toJavaObject(tClass))
                 .orElse(null);
-        if (confObj == null) {
-            throw new RuntimeException(tClass + "加载配置文件出现异常");
-        }
         injectConfiguration(tClass, confObj);
     }
 

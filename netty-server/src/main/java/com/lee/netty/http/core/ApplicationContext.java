@@ -1,5 +1,7 @@
 package com.lee.netty.http.core;
 
+import com.alibaba.fastjson.JSONObject;
+import com.lee.netty.http.conf.ServerConf;
 import com.lee.netty.http.conf.ServerConfiguration;
 import com.lee.netty.http.server.Server;
 import com.lee.ioc.core.IocAppContext;
@@ -59,11 +61,20 @@ public class ApplicationContext {
         try {
             ApplicationContext.CONFIGURATION = configuration;
             IocAppContext context = IocAppContext.getInstance();
-            // 加载扫描包路径
-            context.init(configuration.getScanPath(), configuration.getScanPackage(),
+            // 加载扫描包路径，并获取配置文件
+            JSONObject yamlJson = context.init(configuration.getScanPath(),
+                    configuration.getScanPackage(),
                     configuration.getBootClass());
+            // 设置服务器的配置文件
+            Optional.ofNullable(yamlJson)
+                    .map(it -> it.getJSONObject("server"))
+                    .map(it -> it.toJavaObject(ServerConf.class))
+                    .map(ServerConf::getPort)
+                    .ifPresent(configuration::setServerPort);
+            // 扫描http服务
             ScanMvcComponent scanMvcComponent = ScanMvcComponent.getInstance();
             scanMvcComponent.init(context);
+            // 启动netty服务器
             SERVER = new NettyStartServer(configuration);
             SERVER.startServer();
         } catch (Exception e) {

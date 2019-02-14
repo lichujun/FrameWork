@@ -21,23 +21,23 @@ import java.util.stream.Stream;
  * @author lichujun
  * @date 2018/12/16 11:40 PM
  */
-public class ScanMvcComponent {
+public class ScanController {
 
     /** 上下文信息和Controller关系集合 */
     private static Map<PathInfo, ControllerInfo> PATH_CONTROLLER = new HashMap<>();
 
-    public static ScanMvcComponent getInstance() {
-        return ScanMvcComponentHolder.INSTANCE.scanMvcComponent;
+    public static ScanController getInstance() {
+        return ScanMvcComponentHolder.INSTANCE.scanController;
     }
 
     private enum ScanMvcComponentHolder {
         // 单例
         INSTANCE;
 
-        private ScanMvcComponent scanMvcComponent;
+        private ScanController scanController;
 
         ScanMvcComponentHolder() {
-            scanMvcComponent = new ScanMvcComponent();
+            scanController = new ScanController();
         }
     }
 

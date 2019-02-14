@@ -3,6 +3,8 @@ package com.lee.ioc.core;
 import com.alibaba.fastjson.JSONObject;
 import com.lee.common.utils.exception.ExceptionUtils;
 import com.lee.ioc.annotation.Configuration;
+import com.lee.ioc.annotation.ControllerAdvice;
+import com.lee.ioc.annotation.ExceptionHandler;
 import com.lee.ioc.utils.ReflectionUtils;
 import com.lee.ioc.utils.ScanUtils;
 import com.lee.ioc.annotation.Resource;
@@ -16,6 +18,7 @@ import org.yaml.snakeyaml.Yaml;
 import java.io.InputStream;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
+import java.lang.reflect.Method;
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -100,6 +103,8 @@ public class IocAppContext extends BeanFactoryImpl {
                                 .ifPresent(this::registerBean);
                         // 加载配置文件
                         loadConfiguration(tClass, yamlJson);
+                        // 处理Exception事件
+                        handleException(tClass);
                     }
                     // 将@Resource依赖注入到Field
                     classSet.forEach(this::processFieldResource);
@@ -303,7 +308,32 @@ public class IocAppContext extends BeanFactoryImpl {
         } else {
             injectConfiguration(tClass);
         }
+    }
 
+    /** 处理Exception事件 */
+    private void handleException(Class<?> tClass) {
+        Optional.ofNullable(tClass)
+            // 只处理存在ControllerAdvice注解的类
+            .filter(it -> it.getDeclaredAnnotation(ControllerAdvice.class) != null)
+            .map(it -> {
+                try {
+                    String beanName = StringUtils.uncapitalize(it.getSimpleName());
+                    Object bean = it.newInstance();
+                    putBean(beanName, bean);
+                } catch (Exception e) {
+                    throw new RuntimeException(it + "Exception的处理类不能存在非默认构造函数");
+                }
+                return it.getDeclaredMethods();
+            })
+            .ifPresent(methods -> {
+                for (Method method : methods) {
+                    Optional.ofNullable(method)
+                        // 只处理存在ExceptionHandler注解的方法
+                        .map(it -> it.getDeclaredAnnotation(ExceptionHandler.class))
+                        .map(ExceptionHandler::value)
+                        .ifPresent(it -> putExceptionHandler(it, method));
+                }
+            });
     }
 
 }

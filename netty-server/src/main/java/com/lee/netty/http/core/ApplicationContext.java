@@ -72,8 +72,8 @@ public class ApplicationContext {
                     .map(ServerConf::getPort)
                     .ifPresent(configuration::setServerPort);
             // 扫描http服务
-            ScanMvcComponent scanMvcComponent = ScanMvcComponent.getInstance();
-            scanMvcComponent.init(context);
+            ScanController scanController = ScanController.getInstance();
+            scanController.init(context);
             // 启动netty服务器
             SERVER = new NettyStartServer(configuration);
             SERVER.startServer();

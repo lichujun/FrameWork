@@ -9,6 +9,7 @@ import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 
 import java.lang.annotation.Annotation;
+import java.lang.reflect.Method;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -27,6 +28,8 @@ public class BeanFactoryImpl implements BeanFactory {
     private static Map<String, BeanDefinition> BEAN_DEFINITION_MAP = new HashMap<>();
     /** 存放接口的实现对应关系 */
     private static Map<String, Set<String>> INTERFACE_MAP = new HashMap<>();
+    /** 存放处理Exception的集合 */
+    private static Map<Class<?>, Method> EXCEPTION_MAP = new HashMap<>();
 
     @Override
     public Object getBean(String name) {
@@ -34,7 +37,7 @@ public class BeanFactoryImpl implements BeanFactory {
                 .orElseGet(() -> Optional.ofNullable(createBean(BEAN_DEFINITION_MAP.get(name)))
                         .map(it ->{
                             // 把对象存入Map中
-                            BEAN_MAP.put(name, it);
+                            putBean(name, it);
                             return it;
                         }).orElse(null)
                 );
@@ -256,6 +259,40 @@ public class BeanFactoryImpl implements BeanFactory {
         if (BEAN_MAP.put(classSimpleName, obj) != null) {
             throw new RuntimeException(tClass + "配置文件的类名存在相同的，注入配置文件失败");
         }
+    }
+
+    /** 添加Exception */
+    void putExceptionHandler(Class<?> tClass, Method method) {
+        if (tClass == null || method == null) {
+            return;
+        }
+        if (EXCEPTION_MAP.put(tClass, method) != null) {
+            throw new RuntimeException(tClass + "存在多个处理方法");
+        }
+    }
+
+    /** 判断对象是否是异常类生成的，并获取对应的method */
+    public Method getMethod(Exception e) {
+        if (e == null) {
+            return null;
+        }
+        return Optional.of(EXCEPTION_MAP)
+                .map(Map::entrySet)
+                .filter(CollectionUtils::isNotEmpty)
+                .map(it -> it.stream()
+                        .filter(local -> e.getClass().equals(local.getKey()))
+                        .findFirst().orElse(null)
+                )
+                .map(Map.Entry::getValue)
+                .orElse(null);
+    }
+
+    /** 注入bean对象 */
+    void putBean(String beanName, Object bean) {
+        if (beanName == null || bean == null) {
+            return;
+        }
+        BEAN_MAP.put(beanName, bean);
     }
 
 }

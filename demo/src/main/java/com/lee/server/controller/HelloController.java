@@ -3,6 +3,7 @@ package com.lee.server.controller;
 import com.lee.server.common.CommonResponse;
 import com.lee.server.conf.DemoConf;
 import com.lee.server.entity.Hello;
+import com.lee.server.exception.BusinessException;
 import com.lee.server.interfaces.IHello;
 import com.lee.server.service.WorldService;
 import com.lee.ioc.annotation.Controller;
@@ -46,8 +47,9 @@ public class HelloController {
     }
 
     @RequestMapping("/")
-    public CommonResponse<String> sayHello() {
-        return CommonResponse.buildOkRes(worldService.doSomething()
-                + "--" + helloService.sayHello());
+    public CommonResponse<String> sayHello() throws BusinessException {
+        throw new BusinessException("world sucks!");
+        /*return CommonResponse.buildOkRes(worldService.doSomething()
+                + "--" + helloService.sayHello());*/
     }
 }

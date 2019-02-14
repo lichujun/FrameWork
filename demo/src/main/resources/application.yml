@@ -6,6 +6,7 @@ scanPackages:
   - com.lee.server.service
   - com.lee.server.repository
   - com.lee.server.conf
+  - com.lee.server.exception
 
 demo:
   conf:

@@ -20,9 +20,6 @@ public class HelloController {
     @Resource
     private DemoConf demoConf;
 
-    @Resource
-    private ServerConf serverConf;
-
     @Resource("helloService")
     private IHello helloService;
     private final IHello worldService;
@@ -35,7 +32,7 @@ public class HelloController {
     public Hello test(@RequestParam("word") String word) {
         Hello h = new Hello();
         if (word == null) {
-            h.setWord(demoConf.getName() + "-" + serverConf.getPort());
+            h.setWord(demoConf.getName());
         } else {
             h.setWord(word);
         }

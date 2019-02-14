@@ -15,12 +15,12 @@ public class WorldService implements IHello {
     private WorldRepository worldRepository;
 
     @Override
-    public void sayHello() {
-
+    public String sayHello() {
+        return null;
     }
 
     @Override
-    public void doSomething() {
-        worldRepository.doSomething();
+    public String doSomething() {
+        return worldRepository.doSomething();
     }
 }

@@ -6,7 +6,7 @@ package com.lee.server.interfaces;
  */
 public interface IHello {
 
-    void sayHello();
+    String sayHello();
 
-    void doSomething();
+    String doSomething();
 }

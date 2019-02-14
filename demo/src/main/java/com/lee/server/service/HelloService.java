@@ -16,12 +16,12 @@ public class HelloService implements IHello {
     private HelloRepository helloRepository;
 
     @Override
-    public void sayHello() {
-        helloRepository.sayHello();
+    public String sayHello() {
+        return helloRepository.sayHello();
     }
 
     @Override
-    public void doSomething() {
-
+    public String doSomething() {
+        return null;
     }
 }

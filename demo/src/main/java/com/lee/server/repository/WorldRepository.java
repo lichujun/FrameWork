@@ -9,7 +9,7 @@ import com.lee.ioc.annotation.Repository;
 @Repository
 public class WorldRepository {
 
-    public void doSomething() {
-        System.out.println("I want to say");
+    public String doSomething() {
+        return "I want to say";
     }
 }

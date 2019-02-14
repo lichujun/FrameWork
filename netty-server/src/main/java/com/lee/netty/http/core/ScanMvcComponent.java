@@ -148,14 +148,13 @@ public class ScanMvcComponent {
     }
 
     /**
-     * 字符串前面补充/，后面去除/
+     * 字符串前面补充/
      * @param origin 传入的字符串
      * @return 处理后的字符串
      */
     private String completeSeparator(String origin) {
         return Optional.ofNullable(origin)
                 .map(it -> it.startsWith("/") ? it : "/" + it)
-                .map(it -> it.replaceAll("[/]+$", ""))
                 .orElse("");
     }
 }

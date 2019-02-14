@@ -69,9 +69,9 @@ public class NettyServerHandler extends SimpleChannelInboundHandler<HttpRequest>
         boolean keepAlive = HttpUtil.isKeepAlive(request);
         if (keepAlive) {
             httpResponse.headers().set(HttpHeaderNames.CONNECTION, HttpHeaderValues.KEEP_ALIVE);
-            ctx.writeAndFlush(httpResponse);
+            ctx.write(httpResponse);
         } else {
-            ctx.writeAndFlush(httpResponse).addListener(ChannelFutureListener.CLOSE);
+            ctx.write(httpResponse).addListener(ChannelFutureListener.CLOSE);
         }
     }
 

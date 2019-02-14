@@ -5,5 +5,5 @@ import lombok.Data;
 @Data
 public class ServerConf {
 
-    private int port;
+    private Integer port;
 }

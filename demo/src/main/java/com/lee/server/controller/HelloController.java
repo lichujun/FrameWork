@@ -1,7 +1,6 @@
 package com.lee.server.controller;
 
 import com.lee.server.conf.DemoConf;
-import com.lee.server.conf.ServerConf;
 import com.lee.server.entity.Hello;
 import com.lee.server.interfaces.IHello;
 import com.lee.server.service.WorldService;

@@ -239,4 +239,23 @@ public class BeanFactoryImpl implements BeanFactory {
         }
     }
 
+    /**
+     * 注入配置文件
+     */
+    void injectConfiguration(Class<?> tClass) {
+        if (tClass == null) {
+            return ;
+        }
+        Object obj;
+        try {
+            obj = tClass.newInstance();
+        } catch (Exception e) {
+            throw new RuntimeException(tClass + "注入配置文件失败");
+        }
+        String classSimpleName = StringUtils.uncapitalize(tClass.getSimpleName());
+        if (BEAN_MAP.put(classSimpleName, obj) != null) {
+            throw new RuntimeException(tClass + "配置文件的类名存在相同的，注入配置文件失败");
+        }
+    }
+
 }

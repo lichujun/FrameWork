@@ -282,7 +282,7 @@ public class IocAppContext extends BeanFactoryImpl {
                 .filter(StringUtils::isNotBlank)
                 .orElse(null);
         if (value == null) {
-            injectConfiguration(tClass, null);
+            injectConfiguration(tClass);
             return;
         }
         String[] arr = value.split("\\.");
@@ -298,7 +298,12 @@ public class IocAppContext extends BeanFactoryImpl {
         Object confObj = Optional.ofNullable(json)
                 .map(it -> it.toJavaObject(tClass))
                 .orElse(null);
-        injectConfiguration(tClass, confObj);
+        if (confObj != null) {
+            injectConfiguration(tClass, confObj);
+        } else {
+            injectConfiguration(tClass);
+        }
+
     }
 
 }

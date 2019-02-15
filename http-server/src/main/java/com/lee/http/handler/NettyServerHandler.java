@@ -58,9 +58,8 @@ public class NettyServerHandler extends SimpleChannelInboundHandler<HttpRequest>
                         .replace("-", "")
                         .toLowerCase();
                 TraceIDUtils.setTraceID(traceID);
-
                 if (MapUtils.isEmpty(controllerInfo.getMethodParameter())) {
-                    log.info("请求入参为空");
+                    log.info("请求入参为空，请求路径为：【{}】", path);
                     // 无参controller层方法调用
                     content = JSON.toJSONString(InvokeControllerUtils.invokeController(controllerInfo));
                 } else {
@@ -68,8 +67,8 @@ public class NettyServerHandler extends SimpleChannelInboundHandler<HttpRequest>
                     String reqJson = ((HttpContent) request).content().toString(StandardCharsets.UTF_8);
                     // 有参controller层方法调用
                     Map<String, String> paramMap = parse(request);
-                    log.info("请求入参：【{}】", MapUtils.isNotEmpty(paramMap)
-                            ? paramMap : reqJson);
+                    log.info("请求入参：【{}】，请求路径为：【{}】", MapUtils.isNotEmpty(paramMap)
+                            ? paramMap : reqJson, path);
                     content = JSON.toJSONString(InvokeControllerUtils.invokeController(
                             controllerInfo, paramMap, reqJson));
                     log.info("请求出参：【{}】", content);

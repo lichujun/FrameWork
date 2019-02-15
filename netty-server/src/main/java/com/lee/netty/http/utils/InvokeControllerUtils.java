@@ -34,7 +34,6 @@ public class InvokeControllerUtils {
         try {
             return method.invoke(controller);
         } catch (InvocationTargetException e) {
-            log.error("反射调用Controller类的方法发生异常", e);
             throw (Exception) e.getTargetException();
         }
     }

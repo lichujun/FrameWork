@@ -37,10 +37,11 @@ public class NettyServerHandler extends SimpleChannelInboundHandler<HttpRequest>
 
     @Override
     public void channelRead0(ChannelHandlerContext ctx, HttpRequest request) {
+        String content = null;
         try {
-            String content;
             // 过滤浏览器的请求
             if(request.uri().equals(FAVICON_ICO)){
+                ctx.close();
                 return;
             }
             // 请求路径
@@ -66,29 +67,33 @@ public class NettyServerHandler extends SimpleChannelInboundHandler<HttpRequest>
                             controllerInfo, paramMap, reqJson));
                 }
             }
-            // 写入响应
-            FullHttpResponse httpResponse = new DefaultFullHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.OK);
-            httpResponse.content().writeBytes(content.getBytes());
-            httpResponse.headers().set(HttpHeaderNames.CONTENT_TYPE, "application/json");
-            httpResponse.headers().setInt(HttpHeaderNames.CONTENT_LENGTH, httpResponse.content().readableBytes());
-            boolean keepAlive = HttpUtil.isKeepAlive(request);
-            if (keepAlive) {
-                httpResponse.headers().set(HttpHeaderNames.CONNECTION, HttpHeaderValues.KEEP_ALIVE);
-                ctx.write(httpResponse);
-            } else {
-                ctx.write(httpResponse).addListener(ChannelFutureListener.CLOSE);
-            }
         } catch (Exception e) {
             Method method = CONTEXT.getMethod(e);
             if (method != null) {
-                Class<?> tClass = method.getClass();
+                Class<?> tClass = method.getDeclaringClass();
                 Object obj = CONTEXT.getBean(StringUtils.uncapitalize(tClass.getSimpleName()));
                 try {
-                    method.invoke(obj, e);
+                    content = JSON.toJSONString(method.invoke(obj, e));
                 } catch (Exception exception) {
                     log.warn(method + "参数只能存在Exception的对象");
                 }
             }
+        }
+        if (content == null) {
+            ctx.close();
+            return;
+        }
+        // 写入响应
+        FullHttpResponse httpResponse = new DefaultFullHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.OK);
+        httpResponse.content().writeBytes(content.getBytes());
+        httpResponse.headers().set(HttpHeaderNames.CONTENT_TYPE, "application/json");
+        httpResponse.headers().setInt(HttpHeaderNames.CONTENT_LENGTH, httpResponse.content().readableBytes());
+        boolean keepAlive = HttpUtil.isKeepAlive(request);
+        if (keepAlive) {
+            httpResponse.headers().set(HttpHeaderNames.CONNECTION, HttpHeaderValues.KEEP_ALIVE);
+            ctx.write(httpResponse);
+        } else {
+            ctx.write(httpResponse).addListener(ChannelFutureListener.CLOSE);
         }
     }
 

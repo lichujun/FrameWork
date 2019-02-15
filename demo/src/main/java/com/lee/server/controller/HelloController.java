@@ -49,7 +49,5 @@ public class HelloController {
     @RequestMapping("/")
     public CommonResponse<String> sayHello() throws BusinessException {
         throw new BusinessException("world sucks!");
-        /*return CommonResponse.buildOkRes(worldService.doSomething()
-                + "--" + helloService.sayHello());*/
     }
 }

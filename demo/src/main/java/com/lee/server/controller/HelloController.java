@@ -34,7 +34,7 @@ public class HelloController {
     public CommonResponse<Hello> test(@RequestParam("word") String word) {
         Hello h = new Hello();
         if (word == null) {
-            h.setWord(demoConf.getName());
+            h.setWord(helloService.sayHello());
         } else {
             h.setWord(word);
         }
@@ -43,6 +43,7 @@ public class HelloController {
 
     @RequestMapping(value = "/helloWorld", method = RequestMethod.POST)
     public CommonResponse<Hello> test(Hello hello) {
+        System.out.println(worldService.doSomething());
         return CommonResponse.buildOkRes(hello);
     }
 

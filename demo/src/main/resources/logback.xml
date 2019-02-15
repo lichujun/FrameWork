@@ -14,21 +14,9 @@
             <pattern>[%d{yyyy-MM-dd HH:mm:ss.SSS}] %-5level [%traceID] [%logger{36}] - %msg%n</pattern>
         </encoder>
     </appender>
-    <!-- 文件输出1 -->
-    <appender name="FILE" class="ch.qos.logback.core.FileAppender">
-        <!-- 输出文件名 -->
-        <!-- <file>${LOG_HOME}/logs/mylog.log</file> -->
-        <!-- 输出文件名,引用其它文件的设置 -->
-        <file>${app_home}/mylog.log</file>
-        <encoder>
-            <!--%date日期 %level日志级别 [%thread]当前线程 %logger{50}输出日志的类，50代表包名加类名的总长度限制 [%file:%line]日志所在文件及行数 %msg%n消息及换行 -->
-            <pattern>%date %level [%traceID] %logger{50} [%file] %msg%n
-            </pattern>
-        </encoder>
-    </appender>
-    <!-- 按照每天生成日志文件 -->
-    <appender name="FILE2" class="ch.qos.logback.core.rolling.RollingFileAppender">
 
+    <!-- 按照每天生成日志文件 -->
+    <appender name="FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
         <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
             <!--日志文件输出的文件名 -->
             <FileNamePattern>${LOG_HOME}/logs/logback-%d{yyyy-MM-dd}.log</FileNamePattern>
@@ -45,6 +33,6 @@
     <!-- 级别定义，输出端内容输出级别，大于或等于root定义的level，方能在输出端输出 -->
     <root level="info">
         <appender-ref ref="STDOUT" />
-        <appender-ref ref="FILE2" />
+        <appender-ref ref="FILE" />
     </root>
 </configuration>

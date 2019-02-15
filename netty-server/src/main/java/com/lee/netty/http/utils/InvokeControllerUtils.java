@@ -26,16 +26,16 @@ public class InvokeControllerUtils {
      * @param controllerInfo controller的信息
      * @return 返回报文
      */
-    public static Object invokeController(ControllerInfo controllerInfo) {
+    public static Object invokeController(ControllerInfo controllerInfo) throws Exception {
         Object controller = IocAppContext.getInstance()
                 .getBean(controllerInfo.getControllerClass());
         Method method = controllerInfo.getInvokeMethod();
         method.setAccessible(true);
         try {
             return method.invoke(controller);
-        } catch (IllegalAccessException | InvocationTargetException e) {
+        } catch (InvocationTargetException e) {
             log.error("反射调用Controller类的方法发生异常", e);
-            throw new RuntimeException("反射调用Controller类的方法发生异常");
+            throw (Exception) e.getTargetException();
         }
     }
 
@@ -47,7 +47,7 @@ public class InvokeControllerUtils {
      */
     public static Object invokeController(ControllerInfo controllerInfo,
                                           Map<String, String> paramMap,
-                                          String reqJson) {
+                                          String reqJson) throws Exception {
         Object controller = IocAppContext.getInstance()
                 .getBean(controllerInfo.getControllerClass());
         Method method = controllerInfo.getInvokeMethod();

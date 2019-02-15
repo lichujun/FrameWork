@@ -3,7 +3,6 @@ package com.lee.ioc.core;
 import com.lee.common.utils.exception.ExceptionUtils;
 import com.lee.ioc.annotation.*;
 import com.lee.ioc.utils.BeanUtils;
-import com.lee.ioc.utils.ClassUtils;
 import com.lee.ioc.bean.BeanDefinition;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -76,7 +75,10 @@ public class BeanFactoryImpl implements BeanFactory {
     /** 注册对象 */
     @Override
     public void registerBean(BeanDefinition beanDefinition) {
-        Optional.ofNullable(beanDefinition)
+        if (beanDefinition == null) {
+            return;
+        }
+        Optional.of(beanDefinition)
             // 过滤没有bean名称或类名的BeanDefinition
             .filter(it ->
                     StringUtils.isNotBlank(it.getName())
@@ -85,7 +87,7 @@ public class BeanFactoryImpl implements BeanFactory {
             )
             .orElseGet(() -> {
                 throw new RuntimeException(String.format("存在多个相同的bean名称：%s",
-                        Objects.requireNonNull(beanDefinition).getName()));
+                        beanDefinition.getName()));
             });
     }
 
@@ -128,9 +130,9 @@ public class BeanFactoryImpl implements BeanFactory {
             // 获取需要创建的实体的类名
             .map(BeanDefinition::getClassName)
             // 通过反射获取需要创建的实体的Class对象
-            .map(ExceptionUtils.handleFunction(ClassUtils::loadClass))
+            .map(ExceptionUtils.handleFunction(Class::forName))
             // 如果有构造函数，就反射获取构造函数创建实例，如果不是就通过Class对象创建实例
-            .map(it -> Optional.of(Objects.requireNonNull(beanDefinition))
+            .map(it -> Optional.of(beanDefinition)
                 .map(BeanDefinition::getConstructorArgs)
                 // 过滤构造函数参数为空的构造函数
                 .filter(CollectionUtils::isNotEmpty)

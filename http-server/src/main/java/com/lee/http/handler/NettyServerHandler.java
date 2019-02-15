@@ -4,6 +4,7 @@ import com.alibaba.fastjson.JSON;
 import com.lee.http.bean.ControllerInfo;
 import com.lee.http.core.ScanController;
 import com.lee.http.utils.InvokeControllerUtils;
+import com.lee.http.utils.TraceIDUtils;
 import com.lee.ioc.core.IocAppContext;
 import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelHandlerContext;
@@ -19,10 +20,7 @@ import org.apache.commons.lang3.StringUtils;
 
 import java.lang.reflect.Method;
 import java.nio.charset.StandardCharsets;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 
 /**
  * 处理http请求的handler
@@ -55,7 +53,14 @@ public class NettyServerHandler extends SimpleChannelInboundHandler<HttpRequest>
             if (controllerInfo == null) {
                 content = "error path, check your path and method...";
             } else {
+                // 设置traceID，方便追踪日志
+                String traceID = UUID.randomUUID().toString()
+                        .replace("-", "")
+                        .toLowerCase();
+                TraceIDUtils.setTraceID(traceID);
+
                 if (MapUtils.isEmpty(controllerInfo.getMethodParameter())) {
+                    log.info("请求入参为空");
                     // 无参controller层方法调用
                     content = JSON.toJSONString(InvokeControllerUtils.invokeController(controllerInfo));
                 } else {
@@ -63,8 +68,11 @@ public class NettyServerHandler extends SimpleChannelInboundHandler<HttpRequest>
                     String reqJson = ((HttpContent) request).content().toString(StandardCharsets.UTF_8);
                     // 有参controller层方法调用
                     Map<String, String> paramMap = parse(request);
+                    log.info("请求入参：【{}】", MapUtils.isNotEmpty(paramMap)
+                            ? paramMap : reqJson);
                     content = JSON.toJSONString(InvokeControllerUtils.invokeController(
                             controllerInfo, paramMap, reqJson));
+                    log.info("请求出参：【{}】", content);
                 }
             }
         } catch (Exception e) {
@@ -74,15 +82,20 @@ public class NettyServerHandler extends SimpleChannelInboundHandler<HttpRequest>
                 Object obj = CONTEXT.getBean(StringUtils.uncapitalize(tClass.getSimpleName()));
                 try {
                     content = JSON.toJSONString(method.invoke(obj, e));
+                    log.info("请求出参：【{}】", content);
                 } catch (Exception exception) {
                     log.warn(method + "参数只能存在Exception的对象");
                 }
             }
+        } finally {
+            // 移除traceID，防止内存泄露
+            TraceIDUtils.removeTraceID();
         }
         if (content == null) {
             ctx.close();
             return;
         }
+
         // 写入响应
         FullHttpResponse httpResponse = new DefaultFullHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.OK);
         httpResponse.content().writeBytes(content.getBytes());

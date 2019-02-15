@@ -5,6 +5,7 @@ import com.lee.http.conf.ServerConf;
 import com.lee.http.conf.ServerConfiguration;
 import com.lee.http.server.NettyServer;
 import com.lee.http.server.Server;
+import com.lee.http.utils.TraceIDUtils;
 import com.lee.ioc.core.IocAppContext;
 import lombok.AccessLevel;
 import lombok.Getter;
@@ -59,6 +60,7 @@ public class ApplicationContext {
      */
     private void start(ServerConfiguration configuration) {
         try {
+            TraceIDUtils.setTraceID("main");
             ApplicationContext.CONFIGURATION = configuration;
             IocAppContext context = IocAppContext.getInstance();
             // 加载扫描包路径，并获取配置文件
@@ -79,6 +81,8 @@ public class ApplicationContext {
             SERVER.startServer();
         } catch (Exception e) {
             log.error("服务器启动失败", e);
+        } finally {
+            TraceIDUtils.removeTraceID();
         }
     }
 }

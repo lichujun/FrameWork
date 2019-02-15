@@ -1,6 +1,6 @@
-package com.lee.netty.http.annotation;
+package com.lee.http.annotation;
 
-import com.lee.netty.http.bean.RequestMethod;
+import com.lee.http.bean.RequestMethod;
 
 import java.lang.annotation.*;
 

@@ -1,11 +1,11 @@
-package com.lee.netty.http.core;
+package com.lee.http.core;
 
 import com.alibaba.fastjson.JSONObject;
-import com.lee.netty.http.conf.ServerConf;
-import com.lee.netty.http.conf.ServerConfiguration;
-import com.lee.netty.http.server.Server;
+import com.lee.http.conf.ServerConf;
+import com.lee.http.conf.ServerConfiguration;
+import com.lee.http.server.NettyServer;
+import com.lee.http.server.Server;
 import com.lee.ioc.core.IocAppContext;
-import com.lee.netty.http.server.NettyStartServer;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -75,7 +75,7 @@ public class ApplicationContext {
             ScanController scanController = ScanController.getInstance();
             scanController.init(context);
             // 启动netty服务器
-            SERVER = new NettyStartServer(configuration);
+            SERVER = new NettyServer(configuration);
             SERVER.startServer();
         } catch (Exception e) {
             log.error("服务器启动失败", e);

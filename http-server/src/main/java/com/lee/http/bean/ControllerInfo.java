@@ -1,4 +1,4 @@
-package com.lee.netty.http.bean;
+package com.lee.http.bean;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;

@@ -1,4 +1,4 @@
-package com.lee.netty.http.conf;
+package com.lee.http.conf;
 
 import lombok.Builder;
 import lombok.Getter;

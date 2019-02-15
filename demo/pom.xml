@@ -14,7 +14,7 @@
     <dependencies>
         <dependency>
             <groupId>com.lee</groupId>
-            <artifactId>netty-server</artifactId>
+            <artifactId>http-server</artifactId>
         </dependency>
     </dependencies>
 
@@ -34,7 +34,7 @@
                             <transformers>
                                 <transformer
                                         implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
-                                    <mainClass>com.lee.server.NettyServer</mainClass>
+                                    <mainClass>com.lee.server.Server</mainClass>
                                 </transformer>
                             </transformers>
                         </configuration>

@@ -11,7 +11,7 @@
 
     <modules>
         <module>ioc</module>
-        <module>netty-server</module>
+        <module>http-server</module>
         <module>common</module>
         <module>demo</module>
     </modules>
@@ -27,6 +27,7 @@
         <lang3.version>3.7</lang3.version>
         <collections4.version>4.2</collections4.version>
         <yaml.version>1.23</yaml.version>
+        <vert.version>3.6.3</vert.version>
     </properties>
 
     <dependencyManagement>
@@ -45,7 +46,7 @@
 
             <dependency>
                 <groupId>com.lee</groupId>
-                <artifactId>netty-server</artifactId>
+                <artifactId>http-server</artifactId>
                 <version>${project.version}</version>
             </dependency>
 
@@ -54,21 +55,6 @@
                 <groupId>org.yaml</groupId>
                 <artifactId>snakeyaml</artifactId>
                 <version>${yaml.version}</version>
-            </dependency>
-
-            <!-- tomcat embed -->
-            <dependency>
-                <groupId>org.apache.tomcat.embed</groupId>
-                <artifactId>tomcat-embed-jasper</artifactId>
-                <version>${tomcat.version}</version>
-            </dependency>
-
-            <!-- JSTL -->
-            <dependency>
-                <groupId>javax.servlet</groupId>
-                <artifactId>jstl</artifactId>
-                <version>${jstl.version}</version>
-                <scope>runtime</scope>
             </dependency>
 
             <!-- https://mvnrepository.com/artifact/io.netty/netty-all -->

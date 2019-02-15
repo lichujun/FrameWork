@@ -1,4 +1,4 @@
-package com.lee.netty.http.bean;
+package com.lee.http.bean;
 
 /**
  * @author lichujun

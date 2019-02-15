@@ -1,7 +1,7 @@
-package com.lee.netty.http.server;
+package com.lee.http.server;
 
-import com.lee.netty.http.conf.ServerConfiguration;
-import com.lee.netty.http.handler.NettyServerHandler;
+import com.lee.http.conf.ServerConfiguration;
+import com.lee.http.handler.NettyServerHandler;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelInitializer;
@@ -22,11 +22,11 @@ import lombok.extern.slf4j.Slf4j;
  * @date 2019/2/8 11:15 AM
  */
 @Slf4j
-public class NettyStartServer implements Server {
+public class NettyServer implements Server {
 
     private int port;
 
-    public NettyStartServer(ServerConfiguration configuration) {
+    public NettyServer(ServerConfiguration configuration) {
         port = configuration.getServerPort();
     }
 

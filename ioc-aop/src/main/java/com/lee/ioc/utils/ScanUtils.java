@@ -69,7 +69,7 @@ public class ScanUtils {
     /**
      * 使用 cl 指定的类加载器递归加载 packageName 指定的包名下面的所有的类。不会返回 null。
      */
-    private static Set<Class<?>> getClasses(String packageName) throws IOException {
+    public static Set<Class<?>> getClasses(String packageName) throws IOException {
         ClassLoader cl = Thread.currentThread().getContextClassLoader();
         ClassPathResource[] resources = getClassPathResources(StringUtils.replace(packageName, ".", "/"), cl);
         Set<Class<?>> result = new HashSet<>();

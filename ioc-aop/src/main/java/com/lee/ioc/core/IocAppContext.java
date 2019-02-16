@@ -2,12 +2,11 @@ package com.lee.ioc.core;
 
 import com.alibaba.fastjson.JSONObject;
 import com.lee.common.utils.exception.ExceptionUtils;
-import com.lee.ioc.annotation.Configuration;
-import com.lee.ioc.annotation.ControllerAdvice;
-import com.lee.ioc.annotation.ExceptionHandler;
+import com.lee.ioc.annotation.*;
+import com.lee.ioc.bean.AopDefinition;
+import com.lee.ioc.bean.AspectMethod;
 import com.lee.ioc.utils.ReflectionUtils;
 import com.lee.ioc.utils.ScanUtils;
-import com.lee.ioc.annotation.Resource;
 import com.lee.ioc.bean.BeanDefinition;
 import com.lee.ioc.bean.ConstructorArg;
 import lombok.extern.slf4j.Slf4j;
@@ -101,6 +100,8 @@ public class IocAppContext extends BeanFactoryImpl {
                         // 将@Component注册到容器
                         Optional.ofNullable(processComponent(tClass))
                                 .ifPresent(this::registerBean);
+                        // 处理有aop注解的类
+                        processAopClass(tClass);
                         // 加载配置文件
                         loadConfiguration(tClass, yamlJson);
                         // 处理Exception事件
@@ -334,6 +335,137 @@ public class IocAppContext extends BeanFactoryImpl {
                         .ifPresent(it -> putExceptionHandler(it, method));
                 }
             });
+    }
+
+    /** 处理有aop注解的类 */
+    private void processAopClass(Class<?> tClass) {
+        // 获取@Aspect注解标注类的bean对象
+        Object aspectObj = Optional.ofNullable(tClass)
+                .filter(it -> it.getDeclaredAnnotation(Aspect.class) != null)
+                .map(it -> {
+                    try {
+                        return it.newInstance();
+                    } catch (Exception e) {
+                        throw new RuntimeException(tClass + "@Aspect注解的类只能有默认构造方法");
+                    }
+                })
+                .orElse(null);
+        if (aspectObj == null) {
+            return;
+        }
+        // 获取@Aspect注解标注类的所有方法
+        Method[] methodArr = tClass.getDeclaredMethods();
+        if (ArrayUtils.isEmpty(methodArr)) {
+            return;
+        }
+        // 获取@Aspect注解标注类的所有aop事件
+        List<AopDefinition> beforeList = new ArrayList<>();
+        List<AopDefinition> afterList = new ArrayList<>();
+        for (Method method : methodArr) {
+            Before before = method.getDeclaredAnnotation(Before.class);
+            if (before != null) {
+                addAopEvent(before.packageName(), before.className(),
+                        before.methodName(), method, beforeList);
+            }
+            After after = method.getDeclaredAnnotation(After.class);
+            if (after != null) {
+                addAopEvent(after.packageName(), after.className(),
+                        after.methodName(), method, afterList);
+            }
+        }
+
+        if (CollectionUtils.isNotEmpty(beforeList)) {
+            // 注册AOP-BEFORE关系
+            registerAop(beforeList, aspectObj, true);
+        }
+
+        if (CollectionUtils.isNotEmpty(afterList)) {
+            // 注册AOP-AFTER关系
+            registerAop(afterList, aspectObj, false);
+        }
+
+    }
+
+    /** 注册AOP关系 */
+    private void registerAop(List<AopDefinition> aopDefinitionList, Object aspectObj,
+                             boolean isBefore) {
+        for (AopDefinition aopDefinition : aopDefinitionList) {
+            // 如果注解注入了类名，则加载类对象
+            if (StringUtils.isNotBlank(aopDefinition.getClassName())) {
+                Class<?> tClass;
+                try {
+                    tClass = Class.forName(aopDefinition.getClassName());
+                } catch (Exception e) {
+                    throw new RuntimeException(String.format("不存在名为%s的类",
+                            aopDefinition.getClassName()));
+                }
+                Method[] methods = tClass.getDeclaredMethods();
+                if (ArrayUtils.isEmpty(methods)) {
+                    continue;
+                }
+                processMethods(methods, aopDefinition, aspectObj, isBefore);
+            } else if (StringUtils.isNotBlank(aopDefinition.getPackageName())) {
+                Set<Class<?>> classSet;
+                try {
+                    classSet = ScanUtils.getClasses(aopDefinition.getPackageName());
+                } catch (Exception e) {
+                    throw new RuntimeException(String.format("不存在包为%s的类",
+                            aopDefinition.getPackageName()));
+                }
+                for (Class<?> tClass : classSet) {
+                    Method[] methods = tClass.getDeclaredMethods();
+                    if (ArrayUtils.isEmpty(methods)) {
+                        continue;
+                    }
+                    processMethods(methods, aopDefinition, aspectObj, isBefore);
+                }
+            }
+        }
+    }
+
+    /**
+     * 处理当前类的所有方法的before事件
+     */
+    private void processMethods(Method[] methods, AopDefinition aopDefinition,
+                                Object aspectObj, boolean isBefore) {
+        // 如果注解没有注入方法名，每次判断是否方法名是否一致
+        if (StringUtils.isNotBlank(aopDefinition.getMethodName())) {
+            for (Method method : methods) {
+                if (aopDefinition.getMethodName().equals(method.getName())) {
+                    AspectMethod aspectMethod = new AspectMethod(aspectObj,
+                            aopDefinition.getMethod());
+                    if (isBefore) {
+                        registerBeforeAOP(method, aspectMethod);
+                    } else {
+                        registerAfterAOP(method, aspectMethod);
+                    }
+                }
+            }
+        } else {
+            for (Method method : methods) {
+                AspectMethod aspectMethod = new AspectMethod(aspectObj,
+                        aopDefinition.getMethod());
+                if (isBefore) {
+                    registerBeforeAOP(method, aspectMethod);
+                } else {
+                    registerAfterAOP(method, aspectMethod);
+                }
+            }
+        }
+    }
+
+    private void addAopEvent(String packageName, String className, String methodName,
+                             Method method, List<AopDefinition> list) {
+        if (StringUtils.isAllBlank(packageName, className, methodName)) {
+            return;
+        }
+        AopDefinition aopDefinition = AopDefinition.builder()
+                .packageName(packageName)
+                .className(className)
+                .methodName(methodName)
+                .method(method)
+                .build();
+        list.add(aopDefinition);
     }
 
 }

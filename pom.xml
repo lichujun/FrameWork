@@ -10,7 +10,7 @@
     <version>1.0-SNAPSHOT</version>
 
     <modules>
-        <module>ioc</module>
+        <module>ioc-aop</module>
         <module>http-server</module>
         <module>common</module>
         <module>demo</module>
@@ -28,6 +28,7 @@
         <yaml.version>1.23</yaml.version>
         <vert.version>3.6.3</vert.version>
         <logback.version>1.2.3</logback.version>
+        <cglib.version>3.2.10</cglib.version>
     </properties>
 
     <dependencyManagement>
@@ -40,7 +41,7 @@
 
             <dependency>
                 <groupId>com.lee</groupId>
-                <artifactId>ioc</artifactId>
+                <artifactId>ioc-aop</artifactId>
                 <version>${project.version}</version>
             </dependency>
 
@@ -63,6 +64,14 @@
                 <artifactId>netty-all</artifactId>
                 <version>${netty.version}</version>
             </dependency>
+
+            <!-- https://mvnrepository.com/artifact/cglib/cglib -->
+            <dependency>
+                <groupId>cglib</groupId>
+                <artifactId>cglib</artifactId>
+                <version>${cglib.version}</version>
+            </dependency>
+
         </dependencies>
     </dependencyManagement>
 

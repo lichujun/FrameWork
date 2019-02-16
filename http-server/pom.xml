@@ -19,7 +19,7 @@
 
         <dependency>
             <groupId>com.lee</groupId>
-            <artifactId>ioc</artifactId>
+            <artifactId>ioc-aop</artifactId>
         </dependency>
 
         <dependency>

@@ -2,11 +2,11 @@ package com.lee.ioc.core;
 
 import com.lee.common.utils.exception.ExceptionUtils;
 import com.lee.ioc.annotation.*;
+import com.lee.ioc.bean.AspectMethod;
 import com.lee.ioc.utils.BeanUtils;
 import com.lee.ioc.bean.BeanDefinition;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
-
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 import java.util.*;
@@ -29,6 +29,10 @@ public class BeanFactoryImpl implements BeanFactory {
     private static Map<String, Set<String>> INTERFACE_MAP = new HashMap<>();
     /** 存放处理Exception的集合 */
     private static Map<Class<?>, Method> EXCEPTION_MAP = new HashMap<>();
+    /** AOP-BEFORE关系集合 */
+    private static Map<Method, List<AspectMethod>> BEFORE_AOP_MAP = new HashMap<>();
+    /** AOP-AFTER关系集合 */
+    private static Map<Method, List<AspectMethod>> AFTER_AOP_MAP = new HashMap<>();
 
     @Override
     public Object getBean(String name) {
@@ -295,6 +299,39 @@ public class BeanFactoryImpl implements BeanFactory {
             return;
         }
         BEAN_MAP.put(beanName, bean);
+    }
+
+    /**
+     * 注册AOP关系
+     * @param method 实体类的方法
+     * @param aspectMethod @Aspect注解标注下的类的bean对象和方法
+     */
+    void registerBeforeAOP(Method method, AspectMethod aspectMethod) {
+        registerAOP(method, aspectMethod, BEFORE_AOP_MAP);
+    }
+
+    void registerAfterAOP(Method method, AspectMethod aspectMethod) {
+        registerAOP(method, aspectMethod, AFTER_AOP_MAP);
+    }
+
+    private void registerAOP(Method method, AspectMethod aspectMethod, Map<Method, List<AspectMethod>> map) {
+        List<AspectMethod> list = map.get(method);
+        if (list == null) {
+            List<AspectMethod> aspectMethodList = new ArrayList<>();
+            aspectMethodList.add(aspectMethod);
+            map.put(method, aspectMethodList);
+        } else {
+            list.add(aspectMethod);
+            map.put(method, list);
+        }
+    }
+
+    public List<AspectMethod> getBeforeAOP(Method method) {
+        return BEFORE_AOP_MAP.get(method);
+    }
+
+    public List<AspectMethod> getAfterAOP(Method method) {
+        return AFTER_AOP_MAP.get(method);
     }
 
 }

@@ -13,6 +13,9 @@ import com.lee.server.exception.BusinessException;
 import com.lee.server.interfaces.IHello;
 import com.lee.server.service.WorldService;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
+
+import java.util.Optional;
 import java.util.concurrent.*;
 
 /**
@@ -68,7 +71,9 @@ public class HelloController {
         String traceID = TraceIDUtils.getTraceID();
         ES.execute(() -> {
             try {
-                TraceIDUtils.setTraceID(traceID);
+                Optional.ofNullable(traceID)
+                        .filter(StringUtils::isNotBlank)
+                        .ifPresent(TraceIDUtils::setTraceID);
                 r.run();
             } finally {
                 TraceIDUtils.removeTraceID();

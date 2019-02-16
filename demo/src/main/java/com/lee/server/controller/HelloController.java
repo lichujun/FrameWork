@@ -71,9 +71,7 @@ public class HelloController {
         String traceID = TraceIDUtils.getTraceID();
         ES.execute(() -> {
             try {
-                Optional.ofNullable(traceID)
-                        .filter(StringUtils::isNotBlank)
-                        .ifPresent(TraceIDUtils::setTraceID);
+                TraceIDUtils.setTraceID(traceID);
                 r.run();
             } finally {
                 TraceIDUtils.removeTraceID();

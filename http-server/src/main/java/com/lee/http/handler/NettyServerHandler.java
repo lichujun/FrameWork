@@ -5,7 +5,7 @@ import com.lee.http.bean.ControllerInfo;
 import com.lee.http.core.ScanController;
 import com.lee.http.utils.InvokeControllerUtils;
 import com.lee.http.utils.TraceIDUtils;
-import com.lee.ioc.core.IocAppContext;
+import com.lee.iocaop.core.IocAppContext;
 import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;

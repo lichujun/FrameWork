@@ -2,8 +2,8 @@ package com.lee.server.service;
 
 import com.lee.server.interfaces.IHello;
 import com.lee.server.repository.WorldRepository;
-import com.lee.ioc.annotation.Resource;
-import com.lee.ioc.annotation.Service;
+import com.lee.iocaop.annotation.Resource;
+import com.lee.iocaop.annotation.Service;
 
 /**
  * @author lichujun

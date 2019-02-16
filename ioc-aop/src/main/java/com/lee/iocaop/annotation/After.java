@@ -1,4 +1,4 @@
-package com.lee.ioc.annotation;
+package com.lee.iocaop.annotation;
 
 import java.lang.annotation.*;
 

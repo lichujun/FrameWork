@@ -1,4 +1,4 @@
-package com.lee.ioc.bean;
+package com.lee.iocaop.bean;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;

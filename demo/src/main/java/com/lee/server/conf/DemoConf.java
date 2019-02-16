@@ -1,6 +1,6 @@
 package com.lee.server.conf;
 
-import com.lee.ioc.annotation.Configuration;
+import com.lee.iocaop.annotation.Configuration;
 import lombok.Data;
 
 /**

@@ -1,7 +1,7 @@
-package com.lee.ioc.proxy;
+package com.lee.iocaop.proxy;
 
-import com.lee.ioc.bean.AspectMethod;
-import com.lee.ioc.core.IocAppContext;
+import com.lee.iocaop.bean.AspectMethod;
+import com.lee.iocaop.core.IocAppContext;
 import lombok.extern.slf4j.Slf4j;
 import net.sf.cglib.proxy.MethodInterceptor;
 import net.sf.cglib.proxy.MethodProxy;

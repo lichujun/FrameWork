@@ -1,6 +1,6 @@
-package com.lee.ioc.utils;
+package com.lee.iocaop.utils;
 
-import com.lee.ioc.proxy.ProxyInterceptor;
+import com.lee.iocaop.proxy.ProxyInterceptor;
 import net.sf.cglib.proxy.Enhancer;
 import java.lang.reflect.Constructor;
 /**

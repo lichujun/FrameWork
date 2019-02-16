@@ -6,7 +6,7 @@ import com.lee.http.conf.ServerConfiguration;
 import com.lee.http.server.NettyServer;
 import com.lee.http.server.Server;
 import com.lee.http.utils.TraceIDUtils;
-import com.lee.ioc.core.IocAppContext;
+import com.lee.iocaop.core.IocAppContext;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;

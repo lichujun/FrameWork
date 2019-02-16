@@ -1,14 +1,14 @@
-package com.lee.ioc.annotation;
+package com.lee.iocaop.annotation;
 
 import java.lang.annotation.*;
 
 /**
  * @author lichujun
- * @date 2018/12/11 10:31 PM
+ * @date 2018/12/9 10:16 AM
  */
-@Target(ElementType.TYPE)
+@Target({ElementType.TYPE})
 @Retention(RetentionPolicy.RUNTIME)
 @Documented
-public @interface Service {
+public @interface Component {
     String value() default "";
 }

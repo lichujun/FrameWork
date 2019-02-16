@@ -1,14 +1,14 @@
-package com.lee.ioc.core;
+package com.lee.iocaop.core;
 
 import com.alibaba.fastjson.JSONObject;
 import com.lee.common.utils.exception.ExceptionUtils;
-import com.lee.ioc.annotation.*;
-import com.lee.ioc.bean.AopDefinition;
-import com.lee.ioc.bean.AspectMethod;
-import com.lee.ioc.utils.ReflectionUtils;
-import com.lee.ioc.utils.ScanUtils;
-import com.lee.ioc.bean.BeanDefinition;
-import com.lee.ioc.bean.ConstructorArg;
+import com.lee.iocaop.annotation.*;
+import com.lee.iocaop.bean.AopDefinition;
+import com.lee.iocaop.bean.AspectMethod;
+import com.lee.iocaop.utils.ReflectionUtils;
+import com.lee.iocaop.utils.ScanUtils;
+import com.lee.iocaop.bean.BeanDefinition;
+import com.lee.iocaop.bean.ConstructorArg;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.ArrayUtils;
@@ -423,9 +423,7 @@ public class IocAppContext extends BeanFactoryImpl {
         }
     }
 
-    /**
-     * 处理当前类的所有方法的before事件
-     */
+    /** 处理当前类的所有方法的AOP关系 */
     private void processMethods(Method[] methods, AopDefinition aopDefinition,
                                 Object aspectObj, boolean isBefore) {
         // 如果注解没有注入方法名，每次判断是否方法名是否一致
@@ -454,6 +452,7 @@ public class IocAppContext extends BeanFactoryImpl {
         }
     }
 
+    /** 添加AOP关系 */
     private void addAopEvent(String packageName, String className, String methodName,
                              Method method, List<AopDefinition> list) {
         if (StringUtils.isAllBlank(packageName, className, methodName)) {

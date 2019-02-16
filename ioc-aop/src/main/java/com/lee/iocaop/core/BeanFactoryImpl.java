@@ -1,10 +1,10 @@
-package com.lee.ioc.core;
+package com.lee.iocaop.core;
 
 import com.lee.common.utils.exception.ExceptionUtils;
-import com.lee.ioc.annotation.*;
-import com.lee.ioc.bean.AspectMethod;
-import com.lee.ioc.utils.BeanUtils;
-import com.lee.ioc.bean.BeanDefinition;
+import com.lee.iocaop.annotation.*;
+import com.lee.iocaop.bean.AspectMethod;
+import com.lee.iocaop.utils.BeanUtils;
+import com.lee.iocaop.bean.BeanDefinition;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import java.lang.annotation.Annotation;
@@ -302,7 +302,7 @@ public class BeanFactoryImpl implements BeanFactory {
     }
 
     /**
-     * 注册AOP关系
+     * 注册AOP-BEFORE关系
      * @param method 实体类的方法
      * @param aspectMethod @Aspect注解标注下的类的bean对象和方法
      */
@@ -310,10 +310,21 @@ public class BeanFactoryImpl implements BeanFactory {
         registerAOP(method, aspectMethod, BEFORE_AOP_MAP);
     }
 
+    /**
+     * 注册AOP-AFTER关系
+     * @param method 实体类的方法
+     * @param aspectMethod @Aspect注解标注下的类的bean对象和方法
+     */
     void registerAfterAOP(Method method, AspectMethod aspectMethod) {
         registerAOP(method, aspectMethod, AFTER_AOP_MAP);
     }
 
+    /**
+     * 注册AOP关系
+     * @param method 实体类的方法
+     * @param aspectMethod @Aspect注解标注下的类的bean对象和方法
+     * @param map 存放AOP关系的集合
+     */
     private void registerAOP(Method method, AspectMethod aspectMethod, Map<Method, List<AspectMethod>> map) {
         List<AspectMethod> list = map.get(method);
         if (list == null) {
@@ -326,10 +337,20 @@ public class BeanFactoryImpl implements BeanFactory {
         }
     }
 
+    /**
+     * 获取方法的AOP-BEFORE的关系
+     * @param method 方法
+     * @return 该方法的AOP-BEFORE的关系
+     */
     public List<AspectMethod> getBeforeAOP(Method method) {
         return BEFORE_AOP_MAP.get(method);
     }
 
+    /**
+     * 获取方法的AOP-AFTER的关系
+     * @param method 方法
+     * @return 该方法的AOP-AFTER的关系
+     */
     public List<AspectMethod> getAfterAOP(Method method) {
         return AFTER_AOP_MAP.get(method);
     }

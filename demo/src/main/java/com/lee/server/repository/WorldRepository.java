@@ -1,6 +1,6 @@
 package com.lee.server.repository;
 
-import com.lee.ioc.annotation.Repository;
+import com.lee.iocaop.annotation.Repository;
 
 /**
  * @author lichujun

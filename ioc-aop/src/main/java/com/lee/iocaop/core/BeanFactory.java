@@ -1,6 +1,6 @@
-package com.lee.ioc.core;
+package com.lee.iocaop.core;
 
-import com.lee.ioc.bean.BeanDefinition;
+import com.lee.iocaop.bean.BeanDefinition;
 
 import java.util.Set;
 

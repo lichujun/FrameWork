@@ -1,7 +1,7 @@
 package com.lee.server.exception;
 
-import com.lee.ioc.annotation.ControllerAdvice;
-import com.lee.ioc.annotation.ExceptionHandler;
+import com.lee.iocaop.annotation.ControllerAdvice;
+import com.lee.iocaop.annotation.ExceptionHandler;
 import com.lee.server.common.CommonResponse;
 
 /**

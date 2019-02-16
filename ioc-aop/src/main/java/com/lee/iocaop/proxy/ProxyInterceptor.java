@@ -17,11 +17,11 @@ import java.util.List;
 @Slf4j
 public class ProxyInterceptor implements MethodInterceptor {
 
-    private static final IocAppContext context = IocAppContext.getInstance();
+    private static final IocAppContext CONTEXT = IocAppContext.getInstance();
 
     @Override
     public Object intercept(Object o, Method method, Object[] args, MethodProxy methodProxy) throws Throwable {
-        List<AspectMethod> beforeList = context.getBeforeAOP(method);
+        List<AspectMethod> beforeList = CONTEXT.getBeforeAOP(method);
         // 前置通知
         if (CollectionUtils.isNotEmpty(beforeList)) {
             notify(beforeList);
@@ -33,11 +33,12 @@ public class ProxyInterceptor implements MethodInterceptor {
         } catch (Exception e) {
             exception = e;
         }
-        List<AspectMethod> afterList = context.getAfterAOP(method);
+        List<AspectMethod> afterList = CONTEXT.getAfterAOP(method);
         // 后置通知
         if (CollectionUtils.isNotEmpty(afterList)) {
             notify(afterList);
         }
+        // 异常最后抛出
         if (exception != null) {
             throw exception;
         }

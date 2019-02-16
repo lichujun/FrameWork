@@ -64,11 +64,15 @@ public class NettyServerHandler extends SimpleChannelInboundHandler<HttpRequest>
                     content = JSON.toJSONString(InvokeControllerUtils.invokeController(controllerInfo));
                 } else {
                     // 获取post请求的raw body
-                    String reqJson = ((HttpContent) request).content().toString(StandardCharsets.UTF_8);
+                    String reqJson = Optional.of((HttpContent) request)
+                            .map(HttpContent::content)
+                            .map(it -> it.toString(StandardCharsets.UTF_8))
+                            .map(StringUtils::deleteWhitespace)
+                            .orElse(null);
                     // 有参controller层方法调用
                     Map<String, String> paramMap = parse(request);
-                    log.info("请求入参：【{}】，请求路径为：【{}】", MapUtils.isNotEmpty(paramMap)
-                            ? paramMap : reqJson, path);
+                    log.info("请求路径为：【{}】，请求入参：【{}】", path,
+                            MapUtils.isNotEmpty(paramMap) ? paramMap : reqJson);
                     content = JSON.toJSONString(InvokeControllerUtils.invokeController(
                             controllerInfo, paramMap, reqJson));
                     log.info("请求出参：【{}】", content);

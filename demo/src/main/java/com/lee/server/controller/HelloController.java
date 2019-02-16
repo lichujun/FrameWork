@@ -43,7 +43,6 @@ public class HelloController {
 
     @RequestMapping(value = "/helloWorld", method = RequestMethod.POST)
     public CommonResponse<Hello> test(Hello hello) {
-        System.out.println(worldService.doSomething());
         return CommonResponse.buildOkRes(hello);
     }
 

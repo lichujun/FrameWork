@@ -23,18 +23,6 @@ import java.util.Optional;
 public class ApplicationContext {
 
     /**
-     * 全局配置
-     */
-    @Getter
-    private static ServerConfiguration CONFIGURATION = ServerConfiguration.builder().build();
-
-    /**
-     * 默认服务器
-     */
-    @Getter
-    private static Server SERVER;
-
-    /**
      * 启动
      */
     public static void run(Class<?> bootClass) {
@@ -61,7 +49,6 @@ public class ApplicationContext {
     private void start(ServerConfiguration configuration) {
         try {
             TraceIDUtils.setTraceID("main");
-            ApplicationContext.CONFIGURATION = configuration;
             IocAppContext context = IocAppContext.getInstance();
             // 加载扫描包路径，并获取配置文件
             JSONObject yamlJson = context.init(configuration.getScanPath(),
@@ -77,8 +64,7 @@ public class ApplicationContext {
             ScanController scanController = ScanController.getInstance();
             scanController.init(context);
             // 启动netty服务器
-            SERVER = new NettyServer(configuration);
-            SERVER.startServer();
+            new NettyServer(configuration).startServer();
         } catch (Exception e) {
             log.error("服务器启动失败", e);
         } finally {

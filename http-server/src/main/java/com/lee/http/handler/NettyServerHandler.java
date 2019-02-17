@@ -17,7 +17,6 @@ import io.netty.handler.codec.http.multipart.MemoryAttribute;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.StringUtils;
-
 import java.lang.reflect.Method;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
@@ -63,14 +62,18 @@ public class NettyServerHandler extends SimpleChannelInboundHandler<HttpRequest>
                     // 无参controller层方法调用
                     content = JSON.toJSONString(InvokeControllerUtils.invokeController(controllerInfo));
                 } else {
-                    // 获取post请求的raw body
-                    String reqJson = Optional.of((HttpContent) request)
-                            .map(HttpContent::content)
-                            .map(it -> it.toString(StandardCharsets.UTF_8))
-                            .map(StringUtils::deleteWhitespace)
-                            .orElse(null);
+                    String reqJson = null;
                     // 有参controller层方法调用
                     Map<String, String> paramMap = parse(request);
+                    if (controllerInfo.getMethodParameter().size() == 1
+                            && MapUtils.isEmpty(paramMap)) {
+                        // 获取post请求的raw body
+                        reqJson = Optional.of((HttpContent) request)
+                                .map(HttpContent::content)
+                                .map(it -> it.toString(StandardCharsets.UTF_8))
+                                .map(StringUtils::deleteWhitespace)
+                                .orElse(null);
+                    }
                     log.info("请求路径为：【{}】，请求入参：【{}】", path,
                             MapUtils.isNotEmpty(paramMap) ? paramMap : reqJson);
                     content = JSON.toJSONString(InvokeControllerUtils.invokeController(

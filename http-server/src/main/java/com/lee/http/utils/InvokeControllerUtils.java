@@ -56,23 +56,25 @@ public class InvokeControllerUtils {
             return invokeController(controllerInfo);
         } else {
             List<Object> paramList = new ArrayList<>();
-            // 如果只有一个参数，将paramMap的参数反序列化成object对象
-            // 若object对象为null，则将raw body的数据反序列化成object对象
-            if (paramClassMap.size() == 1) {
-                paramClassMap.forEach((paramName, paramClass) -> {
-                    Object param = getParamObject(paramMap, paramName, paramClass);
-                    if (param == null) {
-                        try {
-                            param = Optional.ofNullable(reqJson)
+            // 若paramMap为空，则将raw body的数据反序列化成object对象
+            if (MapUtils.isEmpty(paramMap) && paramClassMap.size() == 1) {
+                Class<?> paramClass = paramClassMap.entrySet().stream()
+                        .findFirst()
+                        .map(Map.Entry::getValue)
+                        .orElse(null);
+                if (paramClass != null) {
+                    try {
+                        Object param = Optional.ofNullable(reqJson)
                                 .filter(StringUtils::isNotBlank)
                                 .map(it -> CastUtils.convert(it, paramClass))
                                 .orElse(null);
-                        } catch (Throwable e) {
-                            log.warn("参数反序列化出现异常", e);
-                        }
+                        paramList.add(param);
+                    } catch (Throwable e) {
+                        log.warn("参数反序列化出现异常", e);
                     }
-                    paramList.add(param);
-                });
+                } else {
+                    paramList.add(null);
+                }
             } else {
                 paramClassMap.forEach((paramName, paramClass) -> {
                     Object param = getParamObject(paramMap, paramName, paramClass);

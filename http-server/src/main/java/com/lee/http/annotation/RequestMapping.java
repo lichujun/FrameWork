@@ -22,5 +22,5 @@ public @interface RequestMapping {
     /**
      * 请求方法
      */
-    RequestMethod method() default RequestMethod.GET;
+    RequestMethod method() default RequestMethod.ALL;
 }

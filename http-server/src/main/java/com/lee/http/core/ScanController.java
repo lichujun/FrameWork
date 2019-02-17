@@ -135,15 +135,16 @@ public class ScanController {
                         return params;
                     })
                     .orElse(null);
-            PathInfo pathInfo = new PathInfo(httpPath, reqMethod.toString());
-            ControllerInfo controllerInfo = new ControllerInfo(tClass, method, paramMap);
-            Optional.ofNullable(PATH_CONTROLLER.put(pathInfo, controllerInfo))
-                    .ifPresent(it -> {
-                        throw new RuntimeException(String.format(
-                                "存在相同的上下文和http请求方法，controller层的方法在：%s.%s",
-                                tClass.getName(), method.getName()));
-                    });
-
+            if (reqMethod == RequestMethod.ALL) {
+                for (RequestMethod reqMethodEnum : RequestMethod.values()) {
+                    if (reqMethodEnum == RequestMethod.ALL) {
+                        continue;
+                    }
+                    putControllerInfo(httpPath, reqMethodEnum, tClass, method, paramMap);
+                }
+            } else {
+                putControllerInfo(httpPath, reqMethod, tClass, method, paramMap);
+            }
         }
     }
 
@@ -156,5 +157,21 @@ public class ScanController {
         return Optional.ofNullable(origin)
                 .map(it -> it.startsWith("/") ? it : "/" + it)
                 .orElse("");
+    }
+
+    /**
+     * 将ControllerInfo信息存放在容器中
+     */
+    private void putControllerInfo(String httpPath, RequestMethod reqMethod,
+                                   Class<?> tClass, Method method,
+                                   Map<String, Class<?>> paramMap) {
+        PathInfo pathInfo = new PathInfo(httpPath, reqMethod.toString());
+        ControllerInfo controllerInfo = new ControllerInfo(tClass, method, paramMap);
+        Optional.ofNullable(PATH_CONTROLLER.put(pathInfo, controllerInfo))
+                .ifPresent(it -> {
+                    throw new RuntimeException(String.format(
+                            "存在相同的上下文和http请求方法，controller层的方法在：%s.%s",
+                            tClass.getName(), method.getName()));
+                });
     }
 }

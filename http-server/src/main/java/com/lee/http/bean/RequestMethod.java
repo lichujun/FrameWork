@@ -6,5 +6,5 @@ package com.lee.http.bean;
  */
 public enum RequestMethod {
     // 请求类型枚举
-    GET, POST, ;
+    GET, POST, ALL, ;
 }

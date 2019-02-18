@@ -35,6 +35,7 @@ public class NettyServerHandler extends SimpleChannelInboundHandler<HttpRequest>
     @Override
     public void channelRead0(ChannelHandlerContext ctx, HttpRequest request) {
         String content = null;
+        HttpResponseStatus status = HttpResponseStatus.OK;
         try {
             // 过滤浏览器的请求
             if(request.uri().equals(FAVICON_ICO)){
@@ -50,7 +51,7 @@ public class NettyServerHandler extends SimpleChannelInboundHandler<HttpRequest>
                     .getController(path, method);
             // 如果没有controller层的信息则返回异常内容
             if (controllerInfo == null) {
-                content = "error path, check your path and method...";
+                status = HttpResponseStatus.NOT_FOUND;
             } else {
                 // 设置traceID，方便追踪日志
                 String traceID = UUID.randomUUID().toString()
@@ -90,12 +91,12 @@ public class NettyServerHandler extends SimpleChannelInboundHandler<HttpRequest>
                     content = JSON.toJSONString(method.invoke(obj, e));
                     log.info("请求出参：【{}】", content);
                 } catch (Exception exception) {
-                    log.warn(method + "参数只能存在Exception的对象");
-                    content = "handle exception method param error";
+                    log.warn("统一捕获异常处理发生异常", e);
+                    status = HttpResponseStatus.INTERNAL_SERVER_ERROR;
                 }
             } else {
-                content = "unhandled exception...";
                 log.warn("unhandled exception：", e);
+                status = HttpResponseStatus.INTERNAL_SERVER_ERROR;
             }
         } finally {
             // 移除traceID，防止内存泄露
@@ -103,8 +104,10 @@ public class NettyServerHandler extends SimpleChannelInboundHandler<HttpRequest>
         }
 
         // 写入响应
-        FullHttpResponse httpResponse = new DefaultFullHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.OK);
-        httpResponse.content().writeBytes(content.getBytes());
+        FullHttpResponse httpResponse = new DefaultFullHttpResponse(HttpVersion.HTTP_1_1, status);
+        if (HttpResponseStatus.OK.equals(status) && StringUtils.isNotBlank(content)) {
+            httpResponse.content().writeBytes(content.getBytes());
+        }
         httpResponse.headers().set(HttpHeaderNames.CONTENT_TYPE, "application/json");
         httpResponse.headers().setInt(HttpHeaderNames.CONTENT_LENGTH, httpResponse.content().readableBytes());
         boolean keepAlive = HttpUtil.isKeepAlive(request);

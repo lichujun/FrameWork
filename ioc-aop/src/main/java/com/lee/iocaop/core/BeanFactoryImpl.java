@@ -139,7 +139,7 @@ public class BeanFactoryImpl implements BeanFactory {
             // 通过反射获取需要创建的实体的Class对象
             .map(ExceptionUtils.handleFunction(Class::forName))
             // 如果有构造函数，就反射获取构造函数创建实例，如果不是就通过Class对象创建实例
-            .map(it -> Optional.ofNullable(beanDefinition)
+            .map(it -> Optional.of(beanDefinition)
                 .map(BeanDefinition::getConstructorArgs)
                 // 过滤构造函数参数为空的构造函数
                 .filter(CollectionUtils::isNotEmpty)

@@ -3,6 +3,7 @@ package com.lee.iocaop.utils;
 import com.lee.iocaop.proxy.ProxyInterceptor;
 import net.sf.cglib.proxy.Enhancer;
 import java.lang.reflect.Constructor;
+
 /**
  * cglib动态代理生成bean
  * @author lichujun
@@ -24,9 +25,8 @@ class CglibProxyUtils {
         enhancer.setCallback(new ProxyInterceptor());
         if(ctr == null){
             return beanClass.cast(enhancer.create());
-        }else {
-            return beanClass.cast(enhancer.create(ctr.getParameterTypes(),args));
         }
+        return beanClass.cast(enhancer.create(ctr.getParameterTypes(), args));
     }
 
     /**

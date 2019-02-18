@@ -376,18 +376,18 @@ public class IocAppContext extends BeanFactoryImpl {
 
         if (CollectionUtils.isNotEmpty(beforeList)) {
             // 注册AOP-BEFORE关系
-            registerAop(beforeList, aspectObj, true);
+            processRegisterAop(beforeList, aspectObj, true);
         }
 
         if (CollectionUtils.isNotEmpty(afterList)) {
             // 注册AOP-AFTER关系
-            registerAop(afterList, aspectObj, false);
+            processRegisterAop(afterList, aspectObj, false);
         }
 
     }
 
     /** 注册AOP关系 */
-    private void registerAop(List<AopDefinition> aopDefinitionList, Object aspectObj,
+    private void processRegisterAop(List<AopDefinition> aopDefinitionList, Object aspectObj,
                              boolean isBefore) {
         for (AopDefinition aopDefinition : aopDefinitionList) {
             // 如果注解注入了类名，则加载类对象

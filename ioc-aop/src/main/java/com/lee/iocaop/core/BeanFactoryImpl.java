@@ -281,7 +281,7 @@ public class BeanFactoryImpl implements BeanFactory {
     }
 
     /** 判断对象是否是异常类生成的，并获取对应的method */
-    public Method getMethod(Exception e) {
+    public Method getMethod(Throwable e) {
         if (e == null) {
             return null;
         }

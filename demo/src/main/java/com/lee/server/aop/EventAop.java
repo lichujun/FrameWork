@@ -4,6 +4,7 @@ import com.lee.iocaop.annotation.After;
 import com.lee.iocaop.annotation.Aspect;
 import com.lee.iocaop.annotation.Before;
 import com.lee.server.entity.Hello;
+import com.lee.server.exception.BusinessException;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.Optional;
@@ -23,9 +24,10 @@ public class EventAop {
     }
 
     @Before(className = "com.lee.server.controller.HelloController", methodName = "test")
-    public void beforeTest(String hello) {
+    public void beforeTest(String hello) throws Exception {
         log.info(hello);
-        log.info("hello, you know, world sucks！");
+        throw new BusinessException("I just play");
+        //log.info("hello, you know, world sucks！");
     }
 
     @After(className = "com.lee.server.controller.HelloController")

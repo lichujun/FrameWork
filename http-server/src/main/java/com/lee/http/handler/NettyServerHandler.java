@@ -81,7 +81,7 @@ public class NettyServerHandler extends SimpleChannelInboundHandler<HttpRequest>
                     log.info("请求出参：【{}】", content);
                 }
             }
-        } catch (Exception e) {
+        } catch (Throwable e) {
             Method method = CONTEXT.getMethod(e);
             if (method != null) {
                 Class<?> tClass = method.getDeclaringClass();
@@ -91,15 +91,14 @@ public class NettyServerHandler extends SimpleChannelInboundHandler<HttpRequest>
                     log.info("请求出参：【{}】", content);
                 } catch (Exception exception) {
                     log.warn(method + "参数只能存在Exception的对象");
+                    content = "handle exception method param error";
                 }
+            } else {
+                content = "unhandled exception...";
             }
         } finally {
             // 移除traceID，防止内存泄露
             TraceIDUtils.removeTraceID();
-        }
-        if (content == null) {
-            ctx.close();
-            return;
         }
 
         // 写入响应

@@ -26,7 +26,7 @@ public class InvokeControllerUtils {
      * @param controllerInfo controller的信息
      * @return 返回报文
      */
-    public static Object invokeController(ControllerInfo controllerInfo) throws Exception {
+    public static Object invokeController(ControllerInfo controllerInfo) throws Throwable {
         Object controller = IocAppContext.getInstance()
                 .getBean(controllerInfo.getControllerClass());
         Method method = controllerInfo.getInvokeMethod();
@@ -34,7 +34,7 @@ public class InvokeControllerUtils {
         try {
             return method.invoke(controller);
         } catch (InvocationTargetException e) {
-            throw (Exception) e.getTargetException();
+            throw e.getTargetException();
         }
     }
 
@@ -46,7 +46,7 @@ public class InvokeControllerUtils {
      */
     public static Object invokeController(ControllerInfo controllerInfo,
                                           Map<String, String> paramMap,
-                                          String reqJson) throws Exception {
+                                          String reqJson) throws Throwable {
         Object controller = IocAppContext.getInstance()
                 .getBean(controllerInfo.getControllerClass());
         Method method = controllerInfo.getInvokeMethod();
@@ -83,9 +83,8 @@ public class InvokeControllerUtils {
             }
             try {
                 return method.invoke(controller, paramList.toArray());
-            } catch (Throwable e) {
-                log.warn("controller层反射出现异常", e);
-                return null;
+            } catch (InvocationTargetException e) {
+                throw e.getTargetException();
             }
         }
     }

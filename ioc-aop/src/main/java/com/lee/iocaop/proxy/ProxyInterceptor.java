@@ -9,6 +9,7 @@ import net.sf.cglib.proxy.MethodProxy;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.ArrayUtils;
 
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.List;
 
@@ -48,19 +49,23 @@ public class ProxyInterceptor implements MethodInterceptor {
     }
 
     /** 通知 */
-    private void notify(List<AspectMethod> list, Method method, Object[] args) {
-        if (CollectionUtils.isNotEmpty(list)) {
-            for (AspectMethod aspectMethod : list) {
-                try {
-                    Method apMethod = aspectMethod.getMethod();
-                    if (apMethod.getParameterCount() == 0) {
-                        apMethod.invoke(aspectMethod.getObject());
-                    } else if (ReflectionUtils.judgeParams(apMethod, method)) {
-                        apMethod.invoke(aspectMethod.getObject(), args);
-                    }
-                } catch (Exception e) {
-                    log.warn(aspectMethod.getMethod() + "动态代理aop的处理出现异常", e);
+    private void notify(List<AspectMethod> list, Method method, Object[] args) throws Throwable {
+        if (CollectionUtils.isEmpty(list)) {
+            return;
+        }
+        for (AspectMethod aspectMethod : list) {
+            try {
+                Method apMethod = aspectMethod.getMethod();
+                apMethod.setAccessible(true);
+                if (apMethod.getParameterCount() == 0) {
+                    apMethod.invoke(aspectMethod.getObject());
+                } else if (ReflectionUtils.judgeParams(apMethod, method)) {
+                    apMethod.invoke(aspectMethod.getObject(), args);
                 }
+            } catch (InvocationTargetException e) {
+                throw e.getTargetException();
+            } catch (IllegalAccessException e) {
+                log.warn(aspectMethod.getMethod() + "动态代理aop的处理出现异常", e);
             }
         }
     }

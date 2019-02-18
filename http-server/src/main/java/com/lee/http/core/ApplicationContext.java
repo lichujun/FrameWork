@@ -63,6 +63,7 @@ public class ApplicationContext {
             // 扫描http服务
             ScanController scanController = ScanController.getInstance();
             scanController.init(context);
+            context.releaseResource();
             // 启动netty服务器
             new NettyServer(configuration).startServer();
         } catch (Exception e) {

@@ -3,7 +3,6 @@ package com.lee.http.server;
 import com.lee.http.conf.ServerConfiguration;
 import com.lee.http.handler.NettyServerHandler;
 import com.lee.http.utils.TraceIDUtils;
-import com.lee.iocaop.core.IocAppContext;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelInitializer;
@@ -34,6 +33,7 @@ public class NettyServer implements Server {
 
     @Override
     public void startServer() {
+        TraceIDUtils.setTraceID("main");
         // 服务端接收事件
         EventLoopGroup boss = new NioEventLoopGroup(8,
                 new DefaultThreadFactory("boss"));
@@ -59,7 +59,6 @@ public class NettyServer implements Server {
                             .addLast(new NettyServerHandler());
                     }
                 });
-        IocAppContext.getInstance().releaseResource();
         try {
             // 绑定端口，同步等待成功
             ChannelFuture channelFuture = bootstrap.bind(port)
@@ -75,6 +74,7 @@ public class NettyServer implements Server {
         } catch (Throwable e) {
             log.error("绑定端口出现异常", e);
         } finally {
+            TraceIDUtils.removeTraceID();
             boss.shutdownGracefully();
             work.shutdownGracefully();
         }

@@ -64,8 +64,6 @@ public class ProxyInterceptor implements MethodInterceptor {
                 }
             } catch (InvocationTargetException e) {
                 throw e.getTargetException();
-            } catch (IllegalAccessException e) {
-                log.warn(aspectMethod.getMethod() + "动态代理aop的处理出现异常", e);
             }
         }
     }

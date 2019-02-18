@@ -37,12 +37,15 @@ public class BeanFactoryImpl implements BeanFactory {
     @Override
     public Object getBean(String name) {
         return Optional.ofNullable(BEAN_MAP.get(name))
-                .orElseGet(() -> Optional.ofNullable(createBean(BEAN_DEFINITION_MAP.get(name)))
-                        .map(it ->{
-                            // 把对象存入Map中
-                            putBean(name, it);
-                            return it;
-                        }).orElse(null)
+                .orElseGet(() ->
+                        Optional.ofNullable(BEAN_DEFINITION_MAP)
+                            .map(it -> it.get(name))
+                            .map(this::createBean)
+                            .map(it ->{
+                                // 把对象存入Map中
+                                putBean(name, it);
+                                return it;
+                            }).orElse(null)
                 );
     }
 
@@ -136,7 +139,7 @@ public class BeanFactoryImpl implements BeanFactory {
             // 通过反射获取需要创建的实体的Class对象
             .map(ExceptionUtils.handleFunction(Class::forName))
             // 如果有构造函数，就反射获取构造函数创建实例，如果不是就通过Class对象创建实例
-            .map(it -> Optional.of(beanDefinition)
+            .map(it -> Optional.ofNullable(beanDefinition)
                 .map(BeanDefinition::getConstructorArgs)
                 // 过滤构造函数参数为空的构造函数
                 .filter(CollectionUtils::isNotEmpty)
@@ -353,6 +356,12 @@ public class BeanFactoryImpl implements BeanFactory {
      */
     public List<AspectMethod> getAfterAOP(Method method) {
         return AFTER_AOP_MAP.get(method);
+    }
+
+    public void releaseResource() {
+        CLASS_SET = null;
+        BEAN_DEFINITION_MAP = null;
+        INTERFACE_MAP = null;
     }
 
 }

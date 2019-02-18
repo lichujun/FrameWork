@@ -430,25 +430,48 @@ public class IocAppContext extends BeanFactoryImpl {
         if (StringUtils.isNotBlank(aopDefinition.getMethodName())) {
             for (Method method : methods) {
                 if (aopDefinition.getMethodName().equals(method.getName())) {
-                    AspectMethod aspectMethod = new AspectMethod(aspectObj,
-                            aopDefinition.getMethod());
-                    if (isBefore) {
-                        registerBeforeAOP(method, aspectMethod);
-                    } else {
-                        registerAfterAOP(method, aspectMethod);
-                    }
+                    registerAOP(aspectObj, aopDefinition, method, isBefore);
                 }
             }
         } else {
             for (Method method : methods) {
-                AspectMethod aspectMethod = new AspectMethod(aspectObj,
-                        aopDefinition.getMethod());
-                if (isBefore) {
-                    registerBeforeAOP(method, aspectMethod);
-                } else {
-                    registerAfterAOP(method, aspectMethod);
-                }
+                registerAOP(aspectObj, aopDefinition, method, isBefore);
             }
+        }
+    }
+
+    /** 注册AOP关系 */
+    private void registerAOP(Object aspectObj, AopDefinition aopDefinition,
+                             Method method, boolean isBefore) {
+        if (!judgeMethodAOP(aopDefinition, method)) {
+            return;
+        }
+        AspectMethod aspectMethod = new AspectMethod(aspectObj,
+                aopDefinition.getMethod());
+        if (isBefore) {
+            registerBeforeAOP(method, aspectMethod);
+        } else {
+            registerAfterAOP(method, aspectMethod);
+        }
+    }
+
+    /** 判断是否是该方法的织入方法 */
+    private boolean judgeMethodAOP(AopDefinition aopDefinition,
+                                   Method method) {
+        try {
+            int paramCount = Optional.ofNullable(aopDefinition)
+                    .map(AopDefinition::getMethod)
+                    .map(Method::getParameterCount)
+                    .orElse(1);
+            if (paramCount == 0) {
+                return true;
+            }
+            Method apMethod = Optional.ofNullable(aopDefinition)
+                    .map(AopDefinition::getMethod)
+                    .orElse(null);
+            return ReflectionUtils.judgeParams(apMethod, method);
+        } catch (Exception e) {
+            return false;
         }
     }
 

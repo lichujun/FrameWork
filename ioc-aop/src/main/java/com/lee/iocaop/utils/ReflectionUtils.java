@@ -1,8 +1,10 @@
 package com.lee.iocaop.utils;
 
 import com.lee.common.utils.exception.ExceptionUtils;
+import org.apache.commons.lang3.ArrayUtils;
 
 import java.lang.reflect.Field;
+import java.lang.reflect.Method;
 import java.util.Optional;
 
 /**
@@ -20,5 +22,26 @@ public class ReflectionUtils {
                     it.setAccessible(true);
                     it.set(obj, value);
                 }));
+    }
+
+    /** 判断两个方法的参数是否相同 */
+    public static boolean judgeParams(Method apMethod, Method method) {
+        if (apMethod == null || method == null) {
+            return false;
+        }
+        if (apMethod.getParameterCount() != method.getParameterCount()) {
+            return false;
+        }
+        Class<?>[] apParams = apMethod.getParameterTypes();
+        if (ArrayUtils.isEmpty(apParams)) {
+            return true;
+        }
+        Class<?>[] params = method.getParameterTypes();
+        for (int i = 0; i < params.length; i++) {
+            if (params[i] == null || !params[i].equals(apParams[i])) {
+                return false;
+            }
+        }
+        return true;
     }
 }

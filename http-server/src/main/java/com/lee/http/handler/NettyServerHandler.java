@@ -95,6 +95,7 @@ public class NettyServerHandler extends SimpleChannelInboundHandler<HttpRequest>
                 }
             } else {
                 content = "unhandled exception...";
+                log.warn("unhandled exception：", e);
             }
         } finally {
             // 移除traceID，防止内存泄露

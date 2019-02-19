@@ -1,5 +1,7 @@
 server:
   port: 9000
+  bossThread: 2
+  workThread: 8
 
 scanPackages:
   - com.lee.server.controller

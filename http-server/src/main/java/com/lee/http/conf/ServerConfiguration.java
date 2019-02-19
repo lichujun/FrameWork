@@ -20,15 +20,10 @@ public class ServerConfiguration {
     private String scanPath = "application.yml";
 
     /**
-     * 端口号
-     */
-    @Builder.Default
-    private int serverPort = 8080;
-
-    /**
      * 扫描路径
      */
     @Builder.Default
     private String scanPackage = "scanPackages";
+
 
 }

@@ -4,11 +4,9 @@ import com.alibaba.fastjson.JSONObject;
 import com.lee.http.conf.ServerConf;
 import com.lee.http.conf.ServerConfiguration;
 import com.lee.http.server.NettyServer;
-import com.lee.http.server.Server;
 import com.lee.http.utils.TraceIDUtils;
 import com.lee.iocaop.core.IocAppContext;
 import lombok.AccessLevel;
-import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -32,13 +30,6 @@ public class ApplicationContext {
     /**
      * 启动
      */
-    public static void run(Class<?> bootClass, int port) {
-        run(ServerConfiguration.builder().bootClass(bootClass).serverPort(port).build());
-    }
-
-    /**
-     * 启动
-     */
     public static void run(ServerConfiguration configuration) {
         new ApplicationContext().start(configuration);
     }
@@ -55,17 +46,16 @@ public class ApplicationContext {
                     configuration.getScanPackage(),
                     configuration.getBootClass());
             // 设置服务器的配置文件
-            Optional.ofNullable(yamlJson)
+            ServerConf serverConf = Optional.ofNullable(yamlJson)
                     .map(it -> it.getJSONObject("server"))
                     .map(it -> it.toJavaObject(ServerConf.class))
-                    .map(ServerConf::getPort)
-                    .ifPresent(configuration::setServerPort);
+                    .orElse(new ServerConf());
             // 扫描http服务
             ScanController scanController = ScanController.getInstance();
             scanController.init(context);
             context.releaseResource();
             // 启动netty服务器
-            new NettyServer(configuration).startServer();
+            new NettyServer(serverConf).startServer();
         } catch (Exception e) {
             log.error("服务器启动失败", e);
         } finally {

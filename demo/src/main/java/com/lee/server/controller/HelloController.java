@@ -61,6 +61,11 @@ public class HelloController {
         throw new BusinessException("world sucks!");
     }
 
+    @RequestMapping(value = "/test", method = RequestMethod.GET)
+    public Object sayIt() {
+        return "world sucks";
+    }
+
     /**
      * 线程池调用，防止线程池日志没traceID
      */

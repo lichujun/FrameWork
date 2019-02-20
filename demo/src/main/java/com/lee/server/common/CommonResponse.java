@@ -3,12 +3,14 @@ package com.lee.server.common;
 import com.lee.http.utils.TraceIDUtils;
 import lombok.Data;
 
+import java.io.Serializable;
+
 /**
  * 统一响应结果
  * @param <T> 业务数据
  */
 @Data
-public class CommonResponse<T> {
+public class CommonResponse<T> implements Serializable {
 
     private Integer code;
 

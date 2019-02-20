@@ -59,6 +59,13 @@ public class ScanController {
     }
 
     /**
+     * 获取上下文信息
+     */
+    public Map<PathInfo, ControllerInfo> getPathController() {
+        return PATH_CONTROLLER;
+    }
+
+    /**
      * 操作Controller的Class对象集合，将上下文信息和Controller关系进行绑定
      * @param classSet Controller的Class对象
      */

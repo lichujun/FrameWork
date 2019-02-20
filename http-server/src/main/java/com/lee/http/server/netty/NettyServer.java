@@ -1,7 +1,8 @@
-package com.lee.http.server;
+package com.lee.http.server.netty;
 
 import com.lee.http.conf.ServerConf;
-import com.lee.http.handler.NettyServerHandler;
+import com.lee.http.server.Server;
+import com.lee.http.server.netty.handler.NettyServerHandler;
 import com.lee.http.utils.TraceIDUtils;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.*;

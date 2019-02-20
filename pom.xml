@@ -29,6 +29,7 @@
         <vert.version>3.6.3</vert.version>
         <logback.version>1.2.3</logback.version>
         <cglib.version>3.2.10</cglib.version>
+        <vertx.version>3.6.3</vertx.version>
     </properties>
 
     <dependencyManagement>
@@ -70,6 +71,13 @@
                 <groupId>cglib</groupId>
                 <artifactId>cglib</artifactId>
                 <version>${cglib.version}</version>
+            </dependency>
+
+            <!-- https://mvnrepository.com/artifact/io.vertx/vertx-web -->
+            <dependency>
+                <groupId>io.vertx</groupId>
+                <artifactId>vertx-web</artifactId>
+                <version>${vertx.version}</version>
             </dependency>
 
         </dependencies>

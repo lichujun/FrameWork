@@ -39,7 +39,9 @@ public class EventLoopVerticle extends AbstractVerticle {
         scanController.routeMessage(this);
 
         // 监听端口
-        vertx.createHttpServer().requestHandler(router).listen(VertxWebServer.CONF.getPort());
+        vertx.createHttpServer()
+                .requestHandler(router)
+                .listen(VertxWebServer.CONF.getPort());
     }
 
     /**
@@ -88,7 +90,7 @@ public class EventLoopVerticle extends AbstractVerticle {
                     }
                     Map<String, String> params = new HashMap<>();
                     // 获取POST请求参数
-                    for (String param : controllerInfo.getMethodParameter().keySet()) {
+                    for (String param : paramMap.keySet()) {
                         Optional.ofNullable(rc.request().getFormAttribute(param))
                                 .ifPresent(it -> params.put(param, it));
                     }

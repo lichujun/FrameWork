@@ -1,16 +1,16 @@
 package com.lee.http.core;
 
 import com.alibaba.fastjson.JSONObject;
+import com.lee.http.bean.ServerEnums;
 import com.lee.http.conf.ServerConf;
 import com.lee.http.conf.ServerConfiguration;
-import com.lee.http.server.netty.NettyServer;
-import com.lee.http.server.vertx.VertxServer;
 import com.lee.http.utils.TraceIDUtils;
 import com.lee.iocaop.core.IocAppContext;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
+import java.util.Arrays;
 import java.util.Optional;
 
 /**
@@ -55,9 +55,14 @@ public class ApplicationContext {
             ScanController scanController = ScanController.getInstance();
             scanController.init(context);
             context.releaseResource();
-            // 启动netty服务器
-            //new NettyServer(serverConf).startServer();
-            new VertxServer(serverConf).startServer();
+            // 启动服务器
+            ServerEnums serverEnums = Optional.of(serverConf)
+                    .map(ServerConf::getName)
+                    .map(name -> Arrays.stream(ServerEnums.values())
+                            .filter(it -> name.equals(it.getServerName()))
+                            .findFirst().orElse(null))
+                    .orElse(ServerEnums.NETTY);
+            serverEnums.getServerClass().newInstance().startServer(serverConf);
         } catch (Exception e) {
             log.error("服务器启动失败", e);
         } finally {

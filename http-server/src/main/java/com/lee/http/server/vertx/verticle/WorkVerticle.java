@@ -21,6 +21,7 @@ import java.util.UUID;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**
+ * work-verticle
  * @author lichujun
  * @date 2019/2/20 7:35 PM
  */
@@ -29,12 +30,13 @@ public class WorkVerticle extends AbstractVerticle {
 
     private static final IocAppContext CONTEXT = IocAppContext.getInstance();
 
-    private static AtomicInteger count = new AtomicInteger();
+    private static AtomicInteger COUNT = new AtomicInteger();
 
 
     @Override
     public void start() {
-        if (count.incrementAndGet() != 1) {
+        // 防止多次初始化
+        if (COUNT.incrementAndGet() != 1) {
             return;
         }
         // 处理event loop分发过来的请求
@@ -56,9 +58,11 @@ public class WorkVerticle extends AbstractVerticle {
                         .replace("-", "")
                         .toLowerCase();
                 TraceIDUtils.setTraceID(traceID);
+                // 如果无参，直接调用
                 if (MapUtils.isEmpty(controller.getMethodParameter())) {
                     res = InvokeControllerUtils.invokeController(controller);
                 } else {
+                    // 获取event bus传递过来的参数
                     Optional<HttpRequest> httpRequest = Optional.of(message)
                             .map(Message::body)
                             .map(it -> (HttpRequest) it);

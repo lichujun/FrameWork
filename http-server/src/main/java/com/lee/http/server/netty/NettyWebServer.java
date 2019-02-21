@@ -1,7 +1,7 @@
 package com.lee.http.server.netty;
 
 import com.lee.http.conf.ServerConf;
-import com.lee.http.server.Server;
+import com.lee.http.server.WebServer;
 import com.lee.http.server.netty.handler.NettyServerHandler;
 import com.lee.http.utils.TraceIDUtils;
 import io.netty.bootstrap.ServerBootstrap;
@@ -21,16 +21,10 @@ import lombok.extern.slf4j.Slf4j;
  * @date 2019/2/8 11:15 AM
  */
 @Slf4j
-public class NettyServer implements Server {
-
-    private ServerConf conf;
-
-    public NettyServer(ServerConf conf) {
-        this.conf = conf;
-    }
+public class NettyWebServer implements WebServer {
 
     @Override
-    public void startServer() {
+    public void startServer(ServerConf conf) {
         TraceIDUtils.setTraceID("main");
         // 服务端接收事件
         EventLoopGroup boss = new NioEventLoopGroup(conf.getBossThread(),

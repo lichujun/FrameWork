@@ -1,5 +1,6 @@
 package com.lee.http.server.vertx;
 
+import com.alibaba.fastjson.JSON;
 import com.lee.http.bean.ControllerInfo;
 import com.lee.http.bean.PathInfo;
 import com.lee.http.bean.RequestMethod;
@@ -55,7 +56,7 @@ public class WorkVerticle extends AbstractVerticle {
                             throwable.printStackTrace();
                         }
                     }
-                    message.reply(res);
+                    message.reply(JSON.toJSONString(res));
                 });
             }
         });

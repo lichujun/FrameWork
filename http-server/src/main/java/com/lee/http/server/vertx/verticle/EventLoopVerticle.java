@@ -9,6 +9,7 @@ import io.vertx.core.AbstractVerticle;
 import io.vertx.core.eventbus.EventBus;
 import io.vertx.ext.web.Router;
 import io.vertx.ext.web.RoutingContext;
+import io.vertx.ext.web.handler.BodyHandler;
 import org.apache.commons.collections4.MapUtils;
 import java.util.HashMap;
 import java.util.Map;
@@ -65,6 +66,7 @@ public class EventLoopVerticle extends AbstractVerticle {
         EventBus eb = vertx.eventBus();
         String path = pathInfo.getHttpMethod() + pathInfo.getHttpPath();
         router.post(pathInfo.getHttpPath())
+                .handler(BodyHandler.create())
                 .handler(rc -> {
                     if (MapUtils.isEmpty(controllerInfo.getMethodParameter())) {
                         sendMessage(eb, path, null, rc);

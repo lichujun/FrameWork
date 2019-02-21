@@ -66,9 +66,11 @@ public class EventLoopVerticle extends AbstractVerticle {
         EventBus eb = vertx.eventBus();
         String path = pathInfo.getHttpMethod() + pathInfo.getHttpPath();
         router.post(pathInfo.getHttpPath())
+                // 为获取post请求的body，必须要加
                 .handler(BodyHandler.create())
                 .handler(rc -> {
-                    if (MapUtils.isEmpty(controllerInfo.getMethodParameter())) {
+                    Map<String, Class<?>> paramMap = controllerInfo.getMethodParameter();
+                    if (MapUtils.isEmpty(paramMap)) {
                         sendMessage(eb, path, null, rc);
                         return;
                     }
@@ -78,7 +80,7 @@ public class EventLoopVerticle extends AbstractVerticle {
                                 .ifPresent(it -> params.put(param, it));
                     }
                     String body = null;
-                    if (MapUtils.isEmpty(params)) {
+                    if (MapUtils.isEmpty(params) && paramMap.size() == 1) {
                         body = rc.getBodyAsString();
                     }
                     HttpRequest httpRequest = HttpRequest.builder()
@@ -94,7 +96,8 @@ public class EventLoopVerticle extends AbstractVerticle {
      */
     private void sendMessage(EventBus eb, String path, Object msg, RoutingContext rc) {
         eb.send(path, msg, res ->
-                rc.response().end(res.result().body().toString()));
+                rc.response().putHeader("Content-type", "text/plain;charset=UTF-8")
+                        .end(res.result().body().toString()));
     }
 
 }

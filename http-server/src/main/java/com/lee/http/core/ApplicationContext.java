@@ -4,6 +4,7 @@ import com.alibaba.fastjson.JSONObject;
 import com.lee.http.conf.ServerConf;
 import com.lee.http.conf.ServerConfiguration;
 import com.lee.http.server.netty.NettyServer;
+import com.lee.http.server.vertx.VertxServer;
 import com.lee.http.utils.TraceIDUtils;
 import com.lee.iocaop.core.IocAppContext;
 import lombok.AccessLevel;
@@ -55,8 +56,8 @@ public class ApplicationContext {
             scanController.init(context);
             context.releaseResource();
             // 启动netty服务器
-            new NettyServer(serverConf).startServer();
-            //new VertxServer(serverConf).startServer();
+            //new NettyServer(serverConf).startServer();
+            new VertxServer(serverConf).startServer();
         } catch (Exception e) {
             log.error("服务器启动失败", e);
         } finally {

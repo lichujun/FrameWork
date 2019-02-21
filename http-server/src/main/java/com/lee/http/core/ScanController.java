@@ -5,12 +5,14 @@ import com.lee.http.annotation.RequestParam;
 import com.lee.http.bean.ControllerInfo;
 import com.lee.http.bean.PathInfo;
 import com.lee.http.bean.RequestMethod;
+import com.lee.http.server.vertx.verticle.EventLoopVerticle;
+import com.lee.http.server.vertx.verticle.WorkVerticle;
 import com.lee.iocaop.annotation.Controller;
 import com.lee.iocaop.core.IocAppContext;
+import io.netty.handler.codec.http.HttpMethod;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
-
 import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
 import java.util.*;
@@ -56,13 +58,6 @@ public class ScanController {
      */
     public ControllerInfo getController(String path, String method) {
         return PATH_CONTROLLER.get(new PathInfo(path, method));
-    }
-
-    /**
-     * 获取上下文信息
-     */
-    public Map<PathInfo, ControllerInfo> getPathController() {
-        return PATH_CONTROLLER;
     }
 
     /**
@@ -181,4 +176,30 @@ public class ScanController {
                             tClass.getName(), method.getName()));
                 });
     }
+
+    /**
+     * 接收vertx来自event loop分发过来的请求
+     */
+    public void processMessage(WorkVerticle work) {
+        PATH_CONTROLLER.forEach((path, controller) -> {
+            if (path == null || controller == null) {
+                return;
+            }
+            work.processReq(path, controller);
+        });
+    }
+
+    /**
+     * event loop路由请求
+     */
+    public void routeMessage(EventLoopVerticle loop) {
+        PATH_CONTROLLER.forEach((path, controller) -> {
+            if (HttpMethod.GET.name().equals(path.getHttpMethod())) {
+                loop.routeGetReq(path, controller);
+            } else if (HttpMethod.POST.name().equals(path.getHttpMethod())) {
+                loop.routePostReq(path, controller);
+            }
+        });
+    }
+
 }

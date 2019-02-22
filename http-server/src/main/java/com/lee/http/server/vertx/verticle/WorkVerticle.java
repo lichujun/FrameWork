@@ -44,9 +44,9 @@ public class WorkVerticle extends AbstractVerticle {
     }
 
     /**
-     * 处理get请求
+     * 处理event bus分发过来的请求
      *
-     * @param path       上下文信息
+     * @param path 上下文信息
      * @param controller controller信息
      */
     public void processReq(PathInfo path, ControllerInfo controller) {

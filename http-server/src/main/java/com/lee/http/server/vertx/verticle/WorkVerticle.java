@@ -51,7 +51,7 @@ public class WorkVerticle extends AbstractVerticle {
      */
     public void processReq(PathInfo path, ControllerInfo controller) {
         vertx.eventBus().consumer(path.getHttpMethod() + path.getHttpPath(), message -> {
-            Object res;
+            Object res = null;
             try {
                 // 设置traceID，方便追踪日志
                 String traceID = UUID.randomUUID().toString()
@@ -60,6 +60,7 @@ public class WorkVerticle extends AbstractVerticle {
                 TraceIDUtils.setTraceID(traceID);
                 // 如果无参，直接调用
                 if (MapUtils.isEmpty(controller.getMethodParameter())) {
+                    log.info("请求路径：【{}】，无需请求参数", path.getHttpPath());
                     res = InvokeControllerUtils.invokeController(controller);
                 } else {
                     // 获取event bus传递过来的参数
@@ -70,15 +71,19 @@ public class WorkVerticle extends AbstractVerticle {
                             .orElse(null);
                     String reqJson = httpRequest.map(HttpRequest::getBody)
                             .orElse(null);
+                    log.info("请求路径：【{}】，请求参数：【{}】", path.getHttpPath(),
+                            MapUtils.isEmpty(params) ? reqJson : params);
                     res = InvokeControllerUtils.invokeController(controller, params, reqJson);
                 }
             } catch (Throwable e) {
                 res = processException(e);
             } finally {
+                String resStr = JSON.toJSONString(res);
+                message.reply(resStr);
+                log.info("请求出参：【{}】", resStr);
                 // 防止ThreadLocal内存泄露
                 TraceIDUtils.removeTraceID();
             }
-            message.reply(JSON.toJSONString(res));
         });
     }
 
@@ -93,7 +98,6 @@ public class WorkVerticle extends AbstractVerticle {
             Object obj = CONTEXT.getBean(StringUtils.uncapitalize(tClass.getSimpleName()));
             try {
                 res = method.invoke(obj, e);
-                log.info("请求出参：【{}】", res);
             } catch (Exception exception) {
                 log.warn("统一捕获异常处理发生异常", e);
                 res = "内部错误";

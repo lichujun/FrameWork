@@ -296,6 +296,9 @@ public class IocAppContext extends BeanFactoryImpl {
         JSONObject json = yamlJson;
         try {
             for (String name : arr) {
+                if (json == null) {
+                    break;
+                }
                 json = json.getJSONObject(name);
             }
         } catch (Exception e) {

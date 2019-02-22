@@ -13,7 +13,6 @@ import io.vertx.core.eventbus.Message;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.StringUtils;
-
 import java.lang.reflect.Method;
 import java.util.Map;
 import java.util.Optional;
@@ -31,7 +30,6 @@ public class WorkVerticle extends AbstractVerticle {
     private static final IocAppContext CONTEXT = IocAppContext.getInstance();
 
     private static AtomicInteger COUNT = new AtomicInteger();
-
 
     @Override
     public void start() {

@@ -11,30 +11,23 @@ import io.vertx.core.eventbus.EventBus;
 import io.vertx.ext.web.Router;
 import io.vertx.ext.web.RoutingContext;
 import io.vertx.ext.web.handler.BodyHandler;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.MapUtils;
-
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.stream.Collectors;
 
 /**
  * event loop
  * @author lichujun
  * @date 2019/2/20 7:35 PM
  */
+@Slf4j
 public class EventLoopVerticle extends AbstractVerticle {
 
     private Router router;
-    private static final AtomicInteger COUNT = new AtomicInteger();
-
     @Override
     public void start() {
-        // 防止多次初始化
-        if (COUNT.incrementAndGet() != 1) {
-            return;
-        }
         this.router = Router.router(vertx);
         ScanController scanController = ScanController.getInstance();
 

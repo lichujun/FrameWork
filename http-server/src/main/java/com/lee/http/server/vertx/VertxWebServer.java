@@ -8,7 +8,10 @@ import com.lee.http.server.vertx.verticle.EventLoopVerticle;
 import com.lee.http.server.vertx.verticle.WorkVerticle;
 import io.vertx.core.DeploymentOptions;
 import io.vertx.core.Vertx;
+import io.vertx.core.VertxOptions;
 import lombok.extern.slf4j.Slf4j;
+
+import java.util.concurrent.TimeUnit;
 
 /**
  * vertx-web服务器
@@ -21,22 +24,23 @@ public class VertxWebServer implements WebServer {
     @Override
     public void startServer(ServerConf conf) {
         CONF = conf;
-        // 设置最大响应时长30秒
-        Vertx vertx = Vertx.vertx();
+        VertxOptions vertxOptions = new VertxOptions()
+                .setEventLoopPoolSize(16);
+        Vertx vertx = Vertx.vertx(vertxOptions);
         // 设置event bus编解码，用于work-verticle解析event bus传递的数据
         vertx.eventBus().registerDefaultCodec(HttpRequest.class, new HttpCodec());
 
         // 启动event loop线程组
         vertx.deployVerticle(EventLoopVerticle.class, new DeploymentOptions()
-                .setInstances(CONF.getBossThread())
-                .setMaxWorkerExecuteTime(5L * 1000 * 1000 * 1000));
+                .setInstances(CONF.getBossThread()));
 
         // 启动work-verticle线程组
         vertx.deployVerticle(WorkVerticle.class, new DeploymentOptions()
                 .setWorker(true)
                 .setInstances(CONF.getWorkThread())
                 .setWorkerPoolName("work-pool")
-                .setMaxWorkerExecuteTime(30L * 1000 * 1000 * 1000));
+                .setMaxWorkerExecuteTimeUnit(TimeUnit.SECONDS)
+                .setMaxWorkerExecuteTime(20));
 
         log.info("服务启动成功");
     }

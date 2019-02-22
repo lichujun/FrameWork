@@ -1,9 +1,14 @@
 server:
+  #应用端口
   port: 9000
+  #IO线程数
   bossThread: 2
+  #工作线程数
   workThread: 8
+  #web服务器名称，vertx或netty，默认netty
   name: vertx
 
+#扫描包路径
 scanPackages:
   - com.lee.server.controller
   - com.lee.server.service
@@ -12,6 +17,7 @@ scanPackages:
   - com.lee.server.exception
   - com.lee.server.aop
 
+#测试，配置注解注入
 demo:
   conf:
     name: hello

@@ -8,7 +8,6 @@ import com.lee.http.server.vertx.verticle.EventLoopVerticle;
 import com.lee.http.server.vertx.verticle.WorkVerticle;
 import io.vertx.core.DeploymentOptions;
 import io.vertx.core.Vertx;
-import io.vertx.core.VertxOptions;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.concurrent.TimeUnit;
@@ -24,9 +23,7 @@ public class VertxWebServer implements WebServer {
     @Override
     public void startServer(ServerConf conf) {
         CONF = conf;
-        VertxOptions vertxOptions = new VertxOptions()
-                .setEventLoopPoolSize(16);
-        Vertx vertx = Vertx.vertx(vertxOptions);
+        Vertx vertx = Vertx.vertx();
         // 设置event bus编解码，用于work-verticle解析event bus传递的数据
         vertx.eventBus().registerDefaultCodec(HttpRequest.class, new HttpCodec());
 

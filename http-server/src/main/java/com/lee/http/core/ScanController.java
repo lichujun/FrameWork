@@ -48,6 +48,7 @@ public class ScanController {
         Optional.ofNullable(context.getClassesByAnnotation(Controller.class))
                 .filter(CollectionUtils::isNotEmpty)
                 .ifPresent(this::putPathController);
+        context.releaseResource();
     }
 
     /**

@@ -54,7 +54,6 @@ public class ApplicationContext {
             // 扫描http服务
             ScanController scanController = ScanController.getInstance();
             scanController.init(context);
-            context.releaseResource();
             // 启动服务器
             ServerEnums serverEnums = Optional.of(serverConf)
                     .map(ServerConf::getName)

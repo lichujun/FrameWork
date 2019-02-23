@@ -20,25 +20,25 @@ import java.util.stream.Collectors;
 public class BeanFactoryImpl implements BeanFactory {
 
     /** 存放所有扫描到的类 */
-    private static Set<Class<?>> CLASS_SET = null;
-    /** 存放对象的容器 */
-    private static Map<String, Object> BEAN_MAP = new HashMap<>();
+    private static Set<Class<?>> classSet = null;
     /** 存放对象数据结构的映射的容器 */
-    private static Map<String, BeanDefinition> BEAN_DEFINITION_MAP = new HashMap<>();
+    private static Map<String, BeanDefinition> beanDefinitionMap = new HashMap<>();
     /** 存放接口的实现对应关系 */
-    private static Map<String, Set<String>> INTERFACE_MAP = new HashMap<>();
+    private static Map<String, Set<String>> interfaceMap = new HashMap<>();
+    /** 存放对象的容器 */
+    private static final Map<String, Object> BEAN_MAP = new HashMap<>();
     /** 存放处理Exception的集合 */
-    private static Map<Class<?>, Method> EXCEPTION_MAP = new HashMap<>();
+    private static final Map<Class<?>, Method> EXCEPTION_MAP = new HashMap<>();
     /** AOP-BEFORE关系集合 */
-    private static Map<Method, List<AspectMethod>> BEFORE_AOP_MAP = new HashMap<>();
+    private static final Map<Method, List<AspectMethod>> BEFORE_AOP_MAP = new HashMap<>();
     /** AOP-AFTER关系集合 */
-    private static Map<Method, List<AspectMethod>> AFTER_AOP_MAP = new HashMap<>();
+    private static final Map<Method, List<AspectMethod>> AFTER_AOP_MAP = new HashMap<>();
 
     @Override
     public Object getBean(String name) {
         return Optional.ofNullable(BEAN_MAP.get(name))
                 .orElseGet(() ->
-                        Optional.ofNullable(BEAN_DEFINITION_MAP)
+                        Optional.ofNullable(beanDefinitionMap)
                             .map(it -> it.get(name))
                             .map(this::createBean)
                             .map(it ->{
@@ -75,7 +75,7 @@ public class BeanFactoryImpl implements BeanFactory {
     @Override
     public Set<String> getInterfaceImpl(String interfaceName) {
         return Optional.ofNullable(interfaceName)
-                .map(it -> INTERFACE_MAP.get(interfaceName))
+                .map(it -> interfaceMap.get(interfaceName))
                 .orElse(null);
     }
 
@@ -90,7 +90,7 @@ public class BeanFactoryImpl implements BeanFactory {
             .filter(it ->
                     StringUtils.isNotBlank(it.getName())
                     && StringUtils.isNotBlank(it.getClassName())
-                    && BEAN_DEFINITION_MAP.put(it.getName(), it) == null
+                    && beanDefinitionMap.put(it.getName(), it) == null
             )
             .orElseGet(() -> {
                 throw new RuntimeException(String.format("存在多个相同的bean名称：%s",
@@ -112,7 +112,7 @@ public class BeanFactoryImpl implements BeanFactory {
             if (StringUtils.isBlank(imp)) {
                 continue;
             }
-            Set<String> impSet = INTERFACE_MAP.get(imp);
+            Set<String> impSet = interfaceMap.get(imp);
             if (CollectionUtils.isNotEmpty(impSet)) {
                 Optional.of(impSet)
                         .filter(set -> set.add(beanName))
@@ -126,7 +126,7 @@ public class BeanFactoryImpl implements BeanFactory {
                 }
                 impSet.add(beanName);
                 // 存放到接口实现容器
-                INTERFACE_MAP.put(imp, impSet);
+                interfaceMap.put(imp, impSet);
             }
         }
     }
@@ -221,7 +221,7 @@ public class BeanFactoryImpl implements BeanFactory {
      * @param classSet Class对象集合
      */
     void setClassSet(Set<Class<?>> classSet) {
-        CLASS_SET = classSet;
+        BeanFactoryImpl.classSet = classSet;
     }
 
     /**
@@ -230,7 +230,7 @@ public class BeanFactoryImpl implements BeanFactory {
      * @return 类集合
      */
     public Set<Class<?>> getClassesByAnnotation(Class<? extends Annotation> annotation) {
-        return Optional.ofNullable(CLASS_SET)
+        return Optional.ofNullable(classSet)
                 .filter(CollectionUtils::isNotEmpty)
                 .map(set -> set.stream()
                         .filter(it -> it.isAnnotationPresent(annotation))
@@ -359,9 +359,9 @@ public class BeanFactoryImpl implements BeanFactory {
     }
 
     public void releaseResource() {
-        CLASS_SET = null;
-        BEAN_DEFINITION_MAP = null;
-        INTERFACE_MAP = null;
+        classSet = null;
+        beanDefinitionMap = null;
+        interfaceMap = null;
     }
 
 }

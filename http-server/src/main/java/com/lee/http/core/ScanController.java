@@ -26,7 +26,7 @@ import java.util.stream.Stream;
 public class ScanController {
 
     /** 上下文信息和Controller关系集合 */
-    private static Map<PathInfo, ControllerInfo> PATH_CONTROLLER = new HashMap<>();
+    private static final Map<PathInfo, ControllerInfo> PATH_CONTROLLER = new HashMap<>();
 
     public static ScanController getInstance() {
         return ScanMvcComponentHolder.INSTANCE.scanController;

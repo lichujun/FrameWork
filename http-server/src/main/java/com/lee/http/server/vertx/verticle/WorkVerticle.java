@@ -29,12 +29,12 @@ public class WorkVerticle extends AbstractVerticle {
 
     private static final IocAppContext CONTEXT = IocAppContext.getInstance();
 
-    private static AtomicInteger COUNT = new AtomicInteger();
+    private static AtomicInteger count = new AtomicInteger();
 
     @Override
     public void start() {
         // 防止多次初始化
-        if (COUNT.incrementAndGet() != 1) {
+        if (count.incrementAndGet() != 1) {
             return;
         }
         // 处理event loop分发过来的请求

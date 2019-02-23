@@ -83,7 +83,7 @@ public class NettyServerHandler extends SimpleChannelInboundHandler<HttpRequest>
                 }
             }
         } catch (Throwable e) {
-            Method method = CONTEXT.getMethod(e);
+            Method method = CONTEXT.getProcessExceptionMethod(e);
             if (method != null) {
                 Class<?> tClass = method.getDeclaringClass();
                 Object obj = CONTEXT.getBean(StringUtils.uncapitalize(tClass.getSimpleName()));

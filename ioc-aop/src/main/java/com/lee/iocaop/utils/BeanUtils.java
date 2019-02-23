@@ -24,4 +24,9 @@ public class BeanUtils {
                 .orElse(null);
     }
 
+    /** 默认构造函数实例化对象 */
+    public static Object instance(Class<?> tClass) {
+        return instance(tClass, null, null);
+    }
+
 }

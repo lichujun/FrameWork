@@ -3,11 +3,14 @@ package com.lee.iocaop.core;
 import com.lee.common.utils.exception.ExceptionUtils;
 import com.lee.iocaop.annotation.*;
 import com.lee.iocaop.bean.AspectMethod;
+import com.lee.iocaop.bean.ConstructorArg;
 import com.lee.iocaop.utils.BeanUtils;
 import com.lee.iocaop.bean.BeanDefinition;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import java.lang.annotation.Annotation;
+import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -17,6 +20,7 @@ import java.util.stream.Collectors;
  * @author lichujun
  * @date 2018/12/8 11:41
  */
+@Slf4j
 public class BeanFactoryImpl implements BeanFactory {
 
     /** 存放所有扫描到的类 */
@@ -34,21 +38,34 @@ public class BeanFactoryImpl implements BeanFactory {
     /** AOP-AFTER关系集合 */
     private static final Map<Method, List<AspectMethod>> AFTER_AOP_MAP = new HashMap<>();
 
+    /**
+     * 通过bean名称获取对象
+     * @param name bean的名称
+     * @return bean名称对应的对象
+     */
     @Override
     public Object getBean(String name) {
-        return Optional.ofNullable(BEAN_MAP.get(name))
-                .orElseGet(() ->
-                        Optional.ofNullable(beanDefinitionMap)
-                            .map(it -> it.get(name))
-                            .map(this::createBean)
-                            .map(it ->{
-                                // 把对象存入Map中
-                                putBean(name, it);
-                                return it;
-                            }).orElse(null)
-                );
+        Object bean = BEAN_MAP.get(name);
+        if (bean != null) {
+            return bean;
+        }
+        return Optional.ofNullable(beanDefinitionMap)
+                // 获取bean的注册信息
+                .map(it -> it.get(name))
+                // 创建bean
+                .map(this::createBean)
+                .map(it ->{
+                    // 把对象存入Map中
+                    putBean(name, it);
+                    return it;
+                }).orElse(null);
     }
 
+    /**
+     * 通过类对象获取对象
+     * @param tClass 类对象
+     * @return 类对象对应的对象
+     */
     @Override
     public <T> T getBean(Class<T> tClass) {
         if (tClass == null) {
@@ -59,10 +76,12 @@ public class BeanFactoryImpl implements BeanFactory {
         }
         return Optional.of(tClass)
                 .filter(local -> !local.isAnnotation()
-                        && existInject(local)
-                )
-                .map(this::getValue)
+                        && existInject(local))
+                // 获取注解注入的bean名称
+                .map(this::getInjectBeanName)
+                // 通过bean名称获取
                 .map(this::getBean)
+                // Object类型转T类型
                 .map(tClass::cast)
                 .orElse(null);
     }
@@ -79,27 +98,27 @@ public class BeanFactoryImpl implements BeanFactory {
                 .orElse(null);
     }
 
-    /** 注册对象 */
+    /**
+     * 注册bean的信息到容器里，以便之后实例化
+     * @param beanDefinition bean的注册信息
+     */
     @Override
     public void registerBean(BeanDefinition beanDefinition) {
-        if (beanDefinition == null) {
+        // 判断注册的bean信息是否有效
+        if (beanDefinition == null
+                || StringUtils.isBlank(beanDefinition.getName())
+                || StringUtils.isBlank(beanDefinition.getClassName())) {
             return;
         }
-        Optional.of(beanDefinition)
-            // 过滤没有bean名称或类名的BeanDefinition
-            .filter(it ->
-                    StringUtils.isNotBlank(it.getName())
-                    && StringUtils.isNotBlank(it.getClassName())
-                    && beanDefinitionMap.put(it.getName(), it) == null
-            )
-            .orElseGet(() -> {
-                throw new RuntimeException(String.format("存在多个相同的bean名称：%s",
-                        beanDefinition.getName()));
-            });
+        // 将bean名称和与之对应的对象存放到容器中，并校验是否有重复的bean名称
+        if (beanDefinitionMap.put(beanDefinition.getName(), beanDefinition) != null) {
+            throw new RuntimeException(String.format("存在多个相同的bean名称：%s",
+                    beanDefinition.getName()));
+        }
     }
 
     /**
-     * 注册接口的所有实现
+     * 将接口和它所有实现的关系注册到容器里
      * @param beanName bean名称
      * @param interfaces 实现的接口
      */
@@ -125,51 +144,61 @@ public class BeanFactoryImpl implements BeanFactory {
                     impSet = new HashSet<>();
                 }
                 impSet.add(beanName);
-                // 存放到接口实现容器
                 interfaceMap.put(imp, impSet);
             }
         }
     }
 
-    /** 实例化对象 */
+    /**
+     * 通过bean的注册信息来实例化对象
+     * @param beanDefinition bean的注册信息
+     * @return 通过bean的注册信息实例化的对象
+     */
     private Object createBean(BeanDefinition beanDefinition) {
-        return Optional.ofNullable(beanDefinition)
-            // 获取需要创建的实体的类名
-            .map(BeanDefinition::getClassName)
-            // 通过反射获取需要创建的实体的Class对象
-            .map(ExceptionUtils.handleFunction(Class::forName))
-            // 如果有构造函数，就反射获取构造函数创建实例，如果不是就通过Class对象创建实例
-            .map(it -> Optional.of(beanDefinition)
-                .map(BeanDefinition::getConstructorArgs)
-                // 过滤构造函数参数为空的构造函数
-                .filter(CollectionUtils::isNotEmpty)
-                // 通过获取构造函数、参数实例化对象
-                .map(ExceptionUtils.handleFunction(args -> {
-                    List<Object> objects = new ArrayList<>();
-                    List<Class<?>> classList = new ArrayList<>();
-                    // 将参数类型和参数放入到list集合中，方便转换成数组结构
-                    args.forEach(ExceptionUtils.handleConsumer(arg ->
-                        Optional.ofNullable(getBean(arg.getRef()))
-                                .map(ExceptionUtils.handleFunction(bean -> {
-                                    objects.add(bean);
-                                    classList.add(Class.forName(arg.getClassName()));
-                                    return bean;
-                                })).orElseGet(() -> {
-                                    throw new RuntimeException(String.format(
-                                            "不存在名称为%s的bean", arg.getRef()));
-                                })
-                    ));
-                    // 构造函数实例化对象
-                    return BeanUtils.instance(it, it.getConstructor(
-                            classList.toArray(new Class<?>[0])),
-                            objects.toArray());
-                }))
-                // 通过Class对象实例化对象
-                .orElseGet(() -> BeanUtils.instance(it, null, null))
-            ).orElse(null);
+        Class<?> tClass = Optional.ofNullable(beanDefinition)
+                // 获取需要创建的实体的类名
+                .map(BeanDefinition::getClassName)
+                // 通过反射获取需要创建的实体的Class对象
+                .map(ExceptionUtils.handleFunction(Class::forName))
+                .orElse(null);
+        if (tClass == null) {
+            return null;
+        }
+        List<ConstructorArg> constructorArgs = beanDefinition.getConstructorArgs();
+        if (CollectionUtils.isEmpty(constructorArgs)) {
+            // 无参构造函数实例化对象
+            return BeanUtils.instance(tClass);
+        }
+        List<Object> objects = new ArrayList<>();
+        List<Class<?>> classList = new ArrayList<>();
+        // 将参数类型和参数放入到list集合中，方便转换成数组结构
+        constructorArgs.forEach(ExceptionUtils.handleConsumer(arg ->
+                Optional.ofNullable(getBean(arg.getRef()))
+                        .map(ExceptionUtils.handleFunction(bean -> {
+                            objects.add(bean);
+                            classList.add(Class.forName(arg.getClassName()));
+                            return bean;
+                        })).orElseGet(() -> {
+                            throw new RuntimeException(String.format(
+                                    "不存在名称为%s的bean", arg.getRef()));
+                })
+        ));
+        Constructor constructor;
+        try {
+            constructor = tClass.getDeclaredConstructor(classList.toArray(new Class[0]));
+        } catch (Throwable e) {
+            log.error("{}不存在注册的bean信息里的构造函数", tClass);
+            throw new RuntimeException(e);
+        }
+        // 构造函数实例化对象
+        return BeanUtils.instance(tClass, constructor, objects.toArray());
     }
 
-    /** 判断是否存在要注入的注解 */
+    /**
+     * 判断类是否存在需要进行依赖注入的注解
+     * @param tClass 类对象
+     * @return 是否需要做依赖注入的操作
+     */
     boolean existInject(Class<?> tClass) {
         // 是否存在Component注解
         return Optional.ofNullable(tClass.getDeclaredAnnotation(Component.class))
@@ -187,7 +216,7 @@ public class BeanFactoryImpl implements BeanFactory {
     }
 
     /** 获取@Component等注入bean的名称 */
-    String getValue(Class<?> tClass) {
+    String getInjectBeanName(Class<?> tClass) {
         // 获取注解注入的值
         String annotationValue =  Optional.ofNullable(tClass.getDeclaredAnnotation(Component.class))
             // 获取Component注解注入的值
@@ -217,7 +246,7 @@ public class BeanFactoryImpl implements BeanFactory {
     }
 
     /**
-     * 将扫描出的所有Class对象存在容器
+     * 将扫描出的所有Class对象注册到容器中
      * @param classSet Class对象集合
      */
     void setClassSet(Set<Class<?>> classSet) {
@@ -225,8 +254,8 @@ public class BeanFactoryImpl implements BeanFactory {
     }
 
     /**
-     * 通过注解获取类集合
-     * @param annotation 注解Class对象
+     * 通过注解获取被此注解标记的类集合
+     * @param annotation 注解
      * @return 类集合
      */
     public Set<Class<?>> getClassesByAnnotation(Class<? extends Annotation> annotation) {
@@ -239,7 +268,9 @@ public class BeanFactoryImpl implements BeanFactory {
     }
 
     /**
-     * 注入配置文件
+     * 将配置文件的bean名称和实例对象注册到bean容器中
+     * @param tClass 配置文件的类对象
+     * @param t 配置文件对象
      */
     void injectConfiguration(Class<?> tClass, Object t) {
         if (tClass == null || t == null) {
@@ -252,7 +283,8 @@ public class BeanFactoryImpl implements BeanFactory {
     }
 
     /**
-     * 注入配置文件
+     * 获取配置文件对象为空，将配置文件的bean名称和默认初始化对象注册到bean容器中
+     * @param tClass 配置文件的类对象
      */
     void injectConfiguration(Class<?> tClass) {
         if (tClass == null) {
@@ -266,22 +298,30 @@ public class BeanFactoryImpl implements BeanFactory {
         }
         String classSimpleName = StringUtils.uncapitalize(tClass.getSimpleName());
         if (BEAN_MAP.put(classSimpleName, obj) != null) {
-            throw new RuntimeException(tClass + "配置文件的类名存在相同的，注入配置文件失败");
+            throw new RuntimeException(tClass + "配置文件的bean名称存在相同的，注入配置文件失败");
         }
     }
 
-    /** 添加Exception */
+    /**
+     * 添加统一异常处理的Exception类
+     * @param tClass 异常类
+     * @param method 异常处理的方法
+     */
     void putExceptionHandler(Class<?> tClass, Method method) {
         if (tClass == null || method == null) {
             return;
         }
         if (EXCEPTION_MAP.put(tClass, method) != null) {
-            throw new RuntimeException(tClass + "存在多个处理方法");
+            throw new RuntimeException(tClass + "异常捕获存在多个处理方法");
         }
     }
 
-    /** 判断对象是否是异常类生成的，并获取对应的method */
-    public Method getMethod(Throwable e) {
+    /**
+     * 判断对象是否是异常类生成的，并获取对应的method
+     * @param e 异常
+     * @return 统一异常处理中此异常执行哪个方法
+     */
+    public Method getProcessExceptionMethod(Throwable e) {
         if (e == null) {
             return null;
         }
@@ -296,7 +336,11 @@ public class BeanFactoryImpl implements BeanFactory {
                 .orElse(null);
     }
 
-    /** 注入bean对象 */
+    /**
+     * 将bean名称和与之对应的对象之间的关系注册到bean容器中
+     * @param beanName bean名称
+     * @param bean bean名称所对应的对象
+     */
     void putBean(String beanName, Object bean) {
         if (beanName == null || bean == null) {
             return;

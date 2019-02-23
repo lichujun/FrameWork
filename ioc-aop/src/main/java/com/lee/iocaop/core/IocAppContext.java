@@ -408,7 +408,7 @@ public class IocAppContext extends BeanFactoryImpl {
                 try {
                     tClass = Class.forName(aopDefinition.getClassName());
                 } catch (Exception e) {
-                    throw new RuntimeException(String.format("不存在名为%s的类",
+                    throw new RuntimeException(String.format("AOP织入方法失败，不存在名为%s的类",
                             aopDefinition.getClassName()));
                 }
                 Method[] methods = tClass.getDeclaredMethods();

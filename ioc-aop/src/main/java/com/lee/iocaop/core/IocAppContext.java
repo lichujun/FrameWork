@@ -57,14 +57,22 @@ public class IocAppContext extends BeanFactoryImpl {
         if (yamlStream == null) {
             return null;
         }
-        log.info("正在加载Bean，进行依赖注入...");
         Yaml yaml = new Yaml();
         Map<String, Object> yamlMap = yaml.load(yamlStream);
         JSONObject yamlJson = new JSONObject(yamlMap);
-        Optional.of(yamlJson)
-                .map(it -> it.getJSONArray(scanPackage))
-                .map(arr -> arr.toJavaList(String.class))
-                .map(HashSet::new)
+        Set<String> packageSet = null;
+        try {
+             packageSet = Optional.of(yamlJson)
+                    .map(it -> it.getJSONArray(scanPackage))
+                    .map(arr -> arr.toJavaList(String.class))
+                    .map(HashSet::new)
+                    .orElse(null);
+        } catch (Exception e) {
+            log.warn("加载需要扫描的包失败", e);
+        }
+        log.info("正在加载Bean，进行依赖注入...");
+        Optional.ofNullable(packageSet)
+                .filter(CollectionUtils::isNotEmpty)
                 .ifPresent(it -> scanPackages(it, yamlJson));
         return yamlJson;
     }
@@ -294,6 +302,7 @@ public class IocAppContext extends BeanFactoryImpl {
         String[] arr = value.split("\\.");
         // 获取json配置文件
         JSONObject json = yamlJson;
+        Object confObj = null;
         try {
             for (String name : arr) {
                 if (json == null) {
@@ -301,12 +310,12 @@ public class IocAppContext extends BeanFactoryImpl {
                 }
                 json = json.getJSONObject(name);
             }
+            confObj = Optional.ofNullable(json)
+                    .map(it -> it.toJavaObject(tClass))
+                    .orElse(null);
         } catch (Exception e) {
-            throw new RuntimeException(tClass + "获取配置文件发生异常，请检查参数");
+            log.warn("获取【{}】的配置文件失败", value, e);
         }
-        Object confObj = Optional.ofNullable(json)
-                .map(it -> it.toJavaObject(tClass))
-                .orElse(null);
         if (confObj != null) {
             injectConfiguration(tClass, confObj);
         } else {

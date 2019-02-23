@@ -47,10 +47,16 @@ public class ApplicationContext {
                     configuration.getScanPackage(),
                     configuration.getBootClass());
             // 设置服务器的配置文件
-            ServerConf serverConf = Optional.ofNullable(yamlJson)
-                    .map(it -> it.getJSONObject("server"))
-                    .map(it -> it.toJavaObject(ServerConf.class))
-                    .orElse(new ServerConf());
+            ServerConf serverConf;
+            try {
+                 serverConf = Optional.ofNullable(yamlJson)
+                        .map(it -> it.getJSONObject("server"))
+                        .map(it -> it.toJavaObject(ServerConf.class))
+                        .orElse(new ServerConf());
+            } catch (Exception e) {
+                log.warn("加载web服务器的配置文件失败", e);
+                serverConf = new ServerConf();
+            }
             // 扫描http服务
             ScanController scanController = ScanController.getInstance();
             scanController.init(context);

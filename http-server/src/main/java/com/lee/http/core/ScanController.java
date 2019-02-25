@@ -9,7 +9,6 @@ import com.lee.http.server.vertx.verticle.EventLoopVerticle;
 import com.lee.http.server.vertx.verticle.WorkVerticle;
 import com.lee.iocaop.annotation.Controller;
 import com.lee.iocaop.core.IocAppContext;
-import io.netty.handler.codec.http.HttpMethod;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;

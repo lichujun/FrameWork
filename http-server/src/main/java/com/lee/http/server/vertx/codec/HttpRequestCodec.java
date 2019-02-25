@@ -5,8 +5,6 @@ import io.vertx.core.buffer.Buffer;
 import io.vertx.core.eventbus.MessageCodec;
 import lombok.extern.slf4j.Slf4j;
 
-import java.io.*;
-
 @Slf4j
 public class HttpRequestCodec implements MessageCodec<HttpRequest, HttpRequest> {
     /**

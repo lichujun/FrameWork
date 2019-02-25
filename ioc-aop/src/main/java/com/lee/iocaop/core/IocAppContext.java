@@ -291,12 +291,16 @@ public class IocAppContext extends BeanFactoryImpl {
             // 获取当前对象的参数所注入的对象
             value = getBean(fieldBeanName);
         } catch (Throwable e) {
-            Class<?>[] classArr = Optional.of(tClass)
+            List<String> paramNameList = Optional.of(tClass)
                     .map(Class::getDeclaredConstructors)
                     .map(it -> it[0])
                     .map(Constructor::getParameterTypes)
+                    .map(params -> Stream.of(params)
+                            .map(Class::getName)
+                            .collect(Collectors.toList()))
                     .orElse(null);
-            log.error("注入Field出现异常，{}和{}之间可能存在循环依赖", tClass, classArr);
+            log.error("注入Field出现异常，{}和{}之间可能存在循环依赖，请检查各自所依赖的bean是否有冲突",
+                    tClass.getName(), paramNameList);
             System.exit(0);
         }
         // 修改当前对象Field参数的值

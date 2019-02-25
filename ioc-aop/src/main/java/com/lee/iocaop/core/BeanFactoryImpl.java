@@ -60,7 +60,12 @@ public class BeanFactoryImpl implements BeanFactory {
                     // 把对象存入Map中
                     putBean(name, it);
                     return it;
-                }).orElse(null);
+                })
+                .orElseGet(() -> {
+                    log.error("找不到名称为[{}]的bean，请检查是否已标记为bean", name);
+                    System.exit(0);
+                    return null;
+                });
     }
 
     /**

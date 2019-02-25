@@ -29,16 +29,16 @@ public class ScanController {
     private static final Map<PathInfo, ControllerInfo> PATH_CONTROLLER = new HashMap<>();
 
     public static ScanController getInstance() {
-        return ScanMvcComponentHolder.INSTANCE.scanController;
+        return ScanComponentHolder.INSTANCE.scanController;
     }
 
-    private enum ScanMvcComponentHolder {
+    private enum ScanComponentHolder {
         // 单例
         INSTANCE;
 
         private ScanController scanController;
 
-        ScanMvcComponentHolder() {
+        ScanComponentHolder() {
             scanController = new ScanController();
         }
     }

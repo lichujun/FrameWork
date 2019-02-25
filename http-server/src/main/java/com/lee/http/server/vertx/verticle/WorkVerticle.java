@@ -67,8 +67,9 @@ public class WorkVerticle extends AbstractVerticle {
                             .map(it -> (HttpRequest) it);
                     Map<String, String> params = httpRequest.map(HttpRequest::getParams)
                             .orElse(null);
-                    String reqJson = httpRequest.map(HttpRequest::getBody)
+                    String request = httpRequest.map(HttpRequest::getBody)
                             .orElse(null);
+                    String reqJson = StringUtils.deleteWhitespace(request);
                     log.info("请求路径：【{}】，请求参数：【{}】", path.getHttpPath(),
                             MapUtils.isEmpty(params) ? reqJson : params);
                     res = InvokeControllerUtils.invokeController(controller, params, reqJson);

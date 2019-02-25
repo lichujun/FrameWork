@@ -1,9 +1,9 @@
 package com.lee.iocaop.core;
 
 import com.lee.common.utils.exception.ExceptionUtils;
-import com.lee.iocaop.annotation.*;
 import com.lee.iocaop.bean.AspectMethod;
 import com.lee.iocaop.bean.ConstructorArg;
+import com.lee.iocaop.bean.enums.ComponentEnums;
 import com.lee.iocaop.utils.BeanUtils;
 import com.lee.iocaop.bean.BeanDefinition;
 import lombok.extern.slf4j.Slf4j;
@@ -37,6 +37,8 @@ public class BeanFactoryImpl implements BeanFactory {
     private static final Map<Method, List<AspectMethod>> BEFORE_AOP_MAP = new HashMap<>();
     /** AOP-AFTER关系集合 */
     private static final Map<Method, List<AspectMethod>> AFTER_AOP_MAP = new HashMap<>();
+    /** bean组件注入获取注入值的方法名 */
+    private static final String BEAN_METHOD = "value";
 
     /**
      * 通过bean名称获取对象
@@ -200,42 +202,36 @@ public class BeanFactoryImpl implements BeanFactory {
      * @return 是否需要做依赖注入的操作
      */
     boolean existInject(Class<?> tClass) {
-        // 是否存在Component注解
-        return Optional.ofNullable(tClass.getDeclaredAnnotation(Component.class))
-            .map(it -> true)
-            // 是否存在Controller注解
-            .orElseGet(() -> Optional.ofNullable(tClass.getDeclaredAnnotation(Controller.class))
-                .map(it -> true)
-                // 是否存在Service注解
-                .orElseGet(() -> Optional.ofNullable(tClass.getDeclaredAnnotation(Service.class))
-                    .map(it -> true)
-                    // 是否存在Repository注解
-                    .orElseGet(() -> tClass.getDeclaredAnnotation(Repository.class) != null)
-                )
-            );
+        for (ComponentEnums component : ComponentEnums.values()) {
+            if (tClass.getDeclaredAnnotation(component.getComponent()) != null) {
+                return true;
+            }
+        }
+        return false;
     }
 
     /** 获取@Component等注入bean的名称 */
     String getInjectBeanName(Class<?> tClass) {
-        // 获取注解注入的值
-        String annotationValue =  Optional.ofNullable(tClass.getDeclaredAnnotation(Component.class))
-            // 获取Component注解注入的值
-            .map(Component::value)
-            .orElseGet(() -> Optional.ofNullable(tClass.getDeclaredAnnotation(Controller.class))
-                // 获取Controller注解注入的值
-                .map(Controller::value)
-                .orElseGet(() -> Optional.ofNullable(tClass.getDeclaredAnnotation(Service.class))
-                    // 获取Service注解注入的值
-                    .map(Service::value)
-                    .orElseGet(() -> Optional.ofNullable(tClass.getDeclaredAnnotation(Repository.class))
-                        // 获取Repository注解注入的值
-                        .map(Repository::value)
-                        .orElseGet(() -> Optional.ofNullable(tClass.getDeclaredAnnotation(Configuration.class))
-                        .map(it -> StringUtils.uncapitalize(tClass.getSimpleName()))
-                        .orElse(null)
-                        )
-                    )
-                ));
+        String annotationValue = null;
+        for (ComponentEnums component : ComponentEnums.values()) {
+            Annotation annotation = tClass.getDeclaredAnnotation(component.getComponent());
+            if (annotation != null) {
+                try {
+                    // 获取bean组件注入值的方法
+                    Method method = component.getComponent().getDeclaredMethod(BEAN_METHOD);
+                    method.setAccessible(true);
+                    // 获取注入的值
+                    Object beanValueObj = method.invoke(annotation);
+                    annotationValue = beanValueObj == null ? null : beanValueObj.toString();
+                } catch (Exception e) {
+                    log.warn("@Component获取注入的值时发生异常", e);
+                    continue;
+                }
+                if (annotationValue != null) {
+                    break;
+                }
+            }
+        }
         // 将注解值为空时将bean的名称设置为首字母小写的简单类名
         return Optional.ofNullable(annotationValue)
                 .map(value -> StringUtils.isNotBlank(value) ? value :

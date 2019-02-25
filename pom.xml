@@ -17,8 +17,6 @@
     </modules>
 
     <properties>
-        <tomcat.version>8.5.31</tomcat.version>
-        <jstl.version>1.2</jstl.version>
         <fastjson.version>1.2.47</fastjson.version>
         <project.version>1.0-SNAPSHOT</project.version>
         <netty.version>4.1.33.Final</netty.version>
@@ -26,7 +24,6 @@
         <lang3.version>3.7</lang3.version>
         <collections4.version>4.2</collections4.version>
         <yaml.version>1.23</yaml.version>
-        <vert.version>3.6.3</vert.version>
         <logback.version>1.2.3</logback.version>
         <cglib.version>3.2.10</cglib.version>
         <vertx.version>3.6.3</vertx.version>

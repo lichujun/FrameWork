@@ -6,6 +6,9 @@ import com.lee.http.bean.RequestMethod;
 import com.lee.http.core.ScanController;
 import com.lee.http.server.vertx.VertxWebServer;
 import com.lee.http.server.vertx.codec.HttpRequest;
+import com.lee.http.server.vertx.codec.HttpResponse;
+import io.netty.handler.codec.http.HttpMethod;
+import io.netty.handler.codec.http.HttpResponseStatus;
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.eventbus.EventBus;
 import io.vertx.ext.web.Router;
@@ -41,9 +44,29 @@ public class EventLoopVerticle extends AbstractVerticle {
     }
 
     /**
+     * 路由请求
+     */
+    public void routeReq(PathInfo path, ControllerInfo controller) {
+        if (HttpMethod.GET.name().equals(path.getHttpMethod())) {
+            routeGetReq(path, controller);
+        } else if (HttpMethod.POST.name().equals(path.getHttpMethod())) {
+            routePostReq(path, controller);
+        }
+    }
+
+    /**
+     * 404请求
+     */
+    public void routeNotFound() {
+        router.route().handler(rc -> rc.response()
+                .setStatusCode(HttpResponseStatus.NOT_FOUND.code())
+                .end());
+    }
+
+    /**
      * 路由GET请求
      */
-    public void routeGetReq(PathInfo pathInfo, ControllerInfo controllerInfo) {
+    private void routeGetReq(PathInfo pathInfo, ControllerInfo controllerInfo) {
         router.get(pathInfo.getHttpPath())
                 .handler(rc ->
                     processRoute(pathInfo, controllerInfo, rc, RequestMethod.GET)
@@ -53,7 +76,7 @@ public class EventLoopVerticle extends AbstractVerticle {
     /**
      * 路由POST请求
      */
-    public void routePostReq(PathInfo pathInfo, ControllerInfo controllerInfo) {
+    private void routePostReq(PathInfo pathInfo, ControllerInfo controllerInfo) {
         router.post(pathInfo.getHttpPath())
                 // 为获取post请求的body，必须要加
                 .handler(BodyHandler.create())
@@ -66,9 +89,19 @@ public class EventLoopVerticle extends AbstractVerticle {
      * EventBus发送消息
      */
     private void sendMessage(EventBus eb, String path, Object msg, RoutingContext rc) {
-        eb.send(path, msg, res ->
+        eb.send(path, msg, res -> {
+            HttpResponse httpResponse = (HttpResponse) res.result().body();
+            if (HttpResponseStatus.OK.equals(httpResponse.getStatus())) {
                 rc.response().putHeader("Content-type", "text/plain;charset=UTF-8")
-                        .end(res.result().body().toString()));
+                        .end(httpResponse.getResponse());
+            } else {
+                HttpResponseStatus status = httpResponse.getStatus();
+                if (status == null) {
+                    status = HttpResponseStatus.INTERNAL_SERVER_ERROR;
+                }
+                rc.response().setStatusCode(status.code()).end();
+            }
+        });
     }
 
     /**

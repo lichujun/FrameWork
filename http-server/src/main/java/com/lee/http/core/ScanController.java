@@ -194,13 +194,8 @@ public class ScanController {
      * event loop路由请求
      */
     public void routeMessage(EventLoopVerticle loop) {
-        PATH_CONTROLLER.forEach((path, controller) -> {
-            if (HttpMethod.GET.name().equals(path.getHttpMethod())) {
-                loop.routeGetReq(path, controller);
-            } else if (HttpMethod.POST.name().equals(path.getHttpMethod())) {
-                loop.routePostReq(path, controller);
-            }
-        });
+        PATH_CONTROLLER.forEach(loop::routeReq);
+        loop.routeNotFound();
     }
 
 }

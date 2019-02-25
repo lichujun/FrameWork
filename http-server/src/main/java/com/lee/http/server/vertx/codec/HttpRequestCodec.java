@@ -1,5 +1,6 @@
 package com.lee.http.server.vertx.codec;
 
+import com.lee.http.utils.CodecUtils;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.eventbus.MessageCodec;
 import lombok.extern.slf4j.Slf4j;
@@ -7,7 +8,7 @@ import lombok.extern.slf4j.Slf4j;
 import java.io.*;
 
 @Slf4j
-public class HttpCodec implements MessageCodec<HttpRequest, HttpRequest> {
+public class HttpRequestCodec implements MessageCodec<HttpRequest, HttpRequest> {
     /**
      * 将消息实体封装到Buffer用于传输
      *
@@ -16,16 +17,7 @@ public class HttpCodec implements MessageCodec<HttpRequest, HttpRequest> {
      */
     @Override
     public void encodeToWire(Buffer buffer, HttpRequest s) {
-        final ByteArrayOutputStream b = new ByteArrayOutputStream();
-        ObjectOutputStream o;
-        try {
-            o = new ObjectOutputStream(b);
-            o.writeObject(s);
-            o.close();
-            buffer.appendBytes(b.toByteArray());
-        } catch (IOException e) {
-            log.warn("将消息实体封装到Buffer用于传输出现异常", e);
-        }
+        CodecUtils.encode(buffer, s);
     }
 
     /**
@@ -33,16 +25,7 @@ public class HttpCodec implements MessageCodec<HttpRequest, HttpRequest> {
      */
     @Override
     public HttpRequest decodeFromWire(int pos, Buffer buffer) {
-        final ByteArrayInputStream b = new ByteArrayInputStream(buffer.getBytes());
-        ObjectInputStream o;
-        HttpRequest msg = null;
-        try {
-            o = new ObjectInputStream(b);
-            msg = (HttpRequest) o.readObject();
-        } catch (IOException | ClassNotFoundException e) {
-            log.warn("从buffer中获取传输的消息实体出现异常", e);
-        }
-        return msg;
+        return CodecUtils.decode(buffer, HttpRequest.class);
     }
 
     /**

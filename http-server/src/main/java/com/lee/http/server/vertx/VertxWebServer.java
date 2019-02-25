@@ -2,8 +2,10 @@ package com.lee.http.server.vertx;
 
 import com.lee.http.conf.ServerConf;
 import com.lee.http.server.WebServer;
-import com.lee.http.server.vertx.codec.HttpCodec;
+import com.lee.http.server.vertx.codec.HttpRequestCodec;
 import com.lee.http.server.vertx.codec.HttpRequest;
+import com.lee.http.server.vertx.codec.HttpResponse;
+import com.lee.http.server.vertx.codec.HttpResponseCodec;
 import com.lee.http.server.vertx.verticle.EventLoopVerticle;
 import com.lee.http.server.vertx.verticle.WorkVerticle;
 import io.vertx.core.DeploymentOptions;
@@ -24,8 +26,10 @@ public class VertxWebServer implements WebServer {
     public void startServer(ServerConf conf) {
         CONF = conf;
         Vertx vertx = Vertx.vertx();
-        // 设置event bus编解码，用于work-verticle解析event bus传递的数据
-        vertx.eventBus().registerDefaultCodec(HttpRequest.class, new HttpCodec());
+        // 设置event bus编解码，用于work-verticle解析event-loop通过event bus传递的数据
+        vertx.eventBus().registerDefaultCodec(HttpRequest.class, new HttpRequestCodec());
+        // 设置event bus编解码，用于event-loop解析work-verticle通过event bus传递的数据
+        vertx.eventBus().registerDefaultCodec(HttpResponse.class, new HttpResponseCodec());
 
         // 启动event loop线程组
         vertx.deployVerticle(EventLoopVerticle.class, new DeploymentOptions()

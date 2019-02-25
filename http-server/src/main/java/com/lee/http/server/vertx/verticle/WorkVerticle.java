@@ -5,9 +5,11 @@ import com.lee.http.bean.ControllerInfo;
 import com.lee.http.bean.PathInfo;
 import com.lee.http.core.ScanController;
 import com.lee.http.server.vertx.codec.HttpRequest;
+import com.lee.http.server.vertx.codec.HttpResponse;
 import com.lee.http.utils.InvokeControllerUtils;
 import com.lee.http.utils.TraceIDUtils;
 import com.lee.iocaop.core.IocAppContext;
+import io.netty.handler.codec.http.HttpResponseStatus;
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.eventbus.Message;
 import lombok.extern.slf4j.Slf4j;
@@ -49,13 +51,14 @@ public class WorkVerticle extends AbstractVerticle {
      */
     public void processReq(PathInfo path, ControllerInfo controller) {
         vertx.eventBus().consumer(path.getHttpMethod() + path.getHttpPath(), message -> {
-            Object res = null;
+            HttpResponse httpResponse = null;
             try {
                 // 设置traceID，方便追踪日志
                 String traceID = UUID.randomUUID().toString()
                         .replace("-", "")
                         .toLowerCase();
                 TraceIDUtils.setTraceID(traceID);
+                Object res;
                 // 如果无参，直接调用
                 if (MapUtils.isEmpty(controller.getMethodParameter())) {
                     log.info("请求路径：【{}】，无需请求参数", path.getHttpPath());
@@ -74,11 +77,17 @@ public class WorkVerticle extends AbstractVerticle {
                             MapUtils.isEmpty(params) ? reqJson : params);
                     res = InvokeControllerUtils.invokeController(controller, params, reqJson);
                 }
+                httpResponse = HttpResponse.builder()
+                        .status(HttpResponseStatus.OK)
+                        .response(JSON.toJSONString(res))
+                        .build();
             } catch (Throwable e) {
-                res = processException(e);
+                httpResponse = processException(e);
             } finally {
-                String resStr = JSON.toJSONString(res);
-                message.reply(resStr);
+                String resStr = Optional.ofNullable(httpResponse)
+                        .map(HttpResponse::getResponse)
+                        .orElse(null);
+                message.reply(httpResponse);
                 log.info("请求出参：【{}】", resStr);
                 // 防止ThreadLocal内存泄露
                 TraceIDUtils.removeTraceID();
@@ -89,22 +98,30 @@ public class WorkVerticle extends AbstractVerticle {
     /**
      * 统一处理异常
      */
-    private Object processException(Throwable e) {
-        Object res;
+    private HttpResponse processException(Throwable e) {
+        HttpResponse httpResponse;
         Method method = CONTEXT.getProcessExceptionMethod(e);
         if (method != null) {
             Class<?> tClass = method.getDeclaringClass();
             Object obj = CONTEXT.getBean(StringUtils.uncapitalize(tClass.getSimpleName()));
             try {
-                res = method.invoke(obj, e);
+                Object res = method.invoke(obj, e);
+                httpResponse = HttpResponse.builder()
+                        .status(HttpResponseStatus.OK)
+                        .response(JSON.toJSONString(res))
+                        .build();
             } catch (Exception exception) {
                 log.warn("统一捕获异常处理发生异常", e);
-                res = "内部错误";
+                httpResponse = HttpResponse.builder()
+                        .status(HttpResponseStatus.INTERNAL_SERVER_ERROR)
+                        .build();
             }
         } else {
             log.warn("unhandled exception：", e);
-            res = "未知异常";
+            httpResponse = HttpResponse.builder()
+                    .status(HttpResponseStatus.INTERNAL_SERVER_ERROR)
+                    .build();
         }
-        return res;
+        return httpResponse;
     }
 }

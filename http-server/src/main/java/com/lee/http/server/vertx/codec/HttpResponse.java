@@ -1,0 +1,18 @@
+package com.lee.http.server.vertx.codec;
+
+import io.netty.handler.codec.http.HttpResponseStatus;
+import lombok.Builder;
+import lombok.Data;
+
+/**
+ * @author lichujun
+ * @date 2019/2/25 7:57 PM
+ */
+
+@Data
+@Builder
+public class HttpResponse {
+
+    private HttpResponseStatus status;
+    private String response;
+}

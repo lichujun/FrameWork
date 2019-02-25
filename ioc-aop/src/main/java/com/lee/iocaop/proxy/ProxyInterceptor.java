@@ -27,21 +27,11 @@ public class ProxyInterceptor implements MethodInterceptor {
         if (CollectionUtils.isNotEmpty(beforeList)) {
             notify(beforeList, method, args);
         }
-        Exception exception = null;
-        Object result = null;
-        try {
-            result = methodProxy.invokeSuper(o, args);
-        } catch (Exception e) {
-            exception = e;
-        }
+        Object result = methodProxy.invokeSuper(o, args);
         List<AspectMethod> afterList = CONTEXT.getAfterAOP(method);
         // 后置通知
         if (CollectionUtils.isNotEmpty(afterList)) {
             notify(afterList, method, args);
-        }
-        // 异常最后抛出
-        if (exception != null) {
-            throw exception;
         }
         return result;
     }

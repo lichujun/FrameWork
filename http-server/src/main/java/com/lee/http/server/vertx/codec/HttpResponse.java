@@ -11,8 +11,8 @@ import lombok.Data;
 
 @Data
 @Builder
-public class HttpResponse {
+public class HttpResponse<T> {
 
     private HttpResponseStatus status;
-    private String response;
+    private T response;
 }

@@ -51,7 +51,7 @@ public class WorkVerticle extends AbstractVerticle {
      */
     public void processReq(PathInfo path, ControllerInfo controller) {
         vertx.eventBus().consumer(path.getHttpMethod() + path.getHttpPath(), message -> {
-            HttpResponse httpResponse = null;
+            HttpResponse<String> httpResponse = null;
             try {
                 // 设置traceID，方便追踪日志
                 String traceID = UUID.randomUUID().toString()
@@ -77,7 +77,7 @@ public class WorkVerticle extends AbstractVerticle {
                             MapUtils.isEmpty(params) ? reqJson : params);
                     res = InvokeControllerUtils.invokeController(controller, params, reqJson);
                 }
-                httpResponse = HttpResponse.builder()
+                httpResponse = HttpResponse.<String>builder()
                         .status(HttpResponseStatus.OK)
                         .response(JSON.toJSONString(res))
                         .build();
@@ -98,27 +98,27 @@ public class WorkVerticle extends AbstractVerticle {
     /**
      * 统一处理异常
      */
-    private HttpResponse processException(Throwable e) {
-        HttpResponse httpResponse;
+    private HttpResponse<String> processException(Throwable e) {
+        HttpResponse<String> httpResponse;
         Method method = CONTEXT.getProcessExceptionMethod(e);
         if (method != null) {
             Class<?> tClass = method.getDeclaringClass();
             Object obj = CONTEXT.getBean(StringUtils.uncapitalize(tClass.getSimpleName()));
             try {
                 Object res = method.invoke(obj, e);
-                httpResponse = HttpResponse.builder()
+                httpResponse = HttpResponse.<String>builder()
                         .status(HttpResponseStatus.OK)
                         .response(JSON.toJSONString(res))
                         .build();
             } catch (Exception exception) {
                 log.warn("统一捕获异常处理发生异常", e);
-                httpResponse = HttpResponse.builder()
+                httpResponse = HttpResponse.<String>builder()
                         .status(HttpResponseStatus.INTERNAL_SERVER_ERROR)
                         .build();
             }
         } else {
             log.warn("unhandled exception：", e);
-            httpResponse = HttpResponse.builder()
+            httpResponse = HttpResponse.<String>builder()
                     .status(HttpResponseStatus.INTERNAL_SERVER_ERROR)
                     .build();
         }

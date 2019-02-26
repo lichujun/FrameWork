@@ -7,6 +7,7 @@ import com.lee.http.core.ScanController;
 import com.lee.http.server.vertx.VertxWebServer;
 import com.lee.http.server.vertx.codec.HttpRequest;
 import com.lee.http.server.vertx.codec.HttpResponse;
+import com.lee.http.utils.AsyncResultUtils;
 import io.netty.handler.codec.http.HttpMethod;
 import io.netty.handler.codec.http.HttpResponseStatus;
 import io.vertx.core.AbstractVerticle;
@@ -90,7 +91,7 @@ public class EventLoopVerticle extends AbstractVerticle {
      */
     private void sendMessage(EventBus eb, String path, Object msg, RoutingContext rc) {
         eb.send(path, msg, res -> {
-            HttpResponse httpResponse = (HttpResponse) res.result().body();
+            HttpResponse<String> httpResponse = AsyncResultUtils.transResponse(res);
             if (HttpResponseStatus.OK.equals(httpResponse.getStatus())) {
                 rc.response().putHeader("Content-type", "text/plain;charset=UTF-8")
                         .end(httpResponse.getResponse());

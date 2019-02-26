@@ -105,7 +105,7 @@ public class EventLoopVerticle extends AbstractVerticle {
     }
 
     /**
-     * 处理路由
+     * 进行请求解析参数和分发请求
      */
     private void processRoute(PathInfo pathInfo, ControllerInfo controllerInfo,
                        RoutingContext rc, RequestMethod requestMethod) {

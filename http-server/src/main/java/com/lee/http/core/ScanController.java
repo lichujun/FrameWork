@@ -181,12 +181,7 @@ public class ScanController {
      * 接收vertx来自event loop分发过来的请求
      */
     public void processMessage(WorkVerticle work) {
-        PATH_CONTROLLER.forEach((path, controller) -> {
-            if (path == null || controller == null) {
-                return;
-            }
-            work.processReq(path, controller);
-        });
+        PATH_CONTROLLER.forEach(work::processReq);
     }
 
     /**

@@ -72,7 +72,13 @@ public class IocAppContext extends BeanFactoryImpl {
         try {
             // 获取需要扫描的包名
             packageSet = Optional.of(yamlJson)
-                    .map(it -> it.getJSONArray(scanPackage))
+                    .map(it -> {
+                        try {
+                            return it.getJSONArray(scanPackage);
+                        } catch (Throwable e) {
+                            return null;
+                        }
+                    })
                     .map(arr -> arr.toJavaList(String.class))
                     .map(HashSet::new)
                     .orElse(null);

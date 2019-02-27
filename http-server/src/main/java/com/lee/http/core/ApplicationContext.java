@@ -50,7 +50,13 @@ public class ApplicationContext {
             ServerConf serverConf;
             try {
                  serverConf = Optional.ofNullable(yamlJson)
-                        .map(it -> it.getJSONObject("server"))
+                        .map(it -> {
+                            try {
+                                return it.getJSONObject("server");
+                            } catch (Throwable e) {
+                                return null;
+                            }
+                        })
                         .map(it -> it.toJavaObject(ServerConf.class))
                         .orElse(new ServerConf());
             } catch (Exception e) {

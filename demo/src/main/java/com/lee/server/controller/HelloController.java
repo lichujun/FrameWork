@@ -24,7 +24,8 @@ import java.util.concurrent.*;
 public class HelloController {
 
     private static final ExecutorService ES = new ThreadPoolExecutor(8, 16,
-            60, TimeUnit.SECONDS, new SynchronousQueue<>());
+            60, TimeUnit.SECONDS, new SynchronousQueue<>(),
+            new ThreadPoolExecutor.DiscardPolicy());
 
     @Resource
     private DemoConf demoConf;
@@ -50,6 +51,11 @@ public class HelloController {
 
     @RequestMapping(value = "/helloWorld", method = RequestMethod.POST)
     public CommonResponse<Hello> test(Hello hello) {
+        /*try {
+            Thread.sleep(1);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }*/
         execute(() ->
            log.info("I want to see traceID, please!")
         );

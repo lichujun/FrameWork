@@ -9,32 +9,22 @@
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
-    <artifactId>http-server</artifactId>
+    <artifactId>mybatis</artifactId>
 
     <dependencies>
         <dependency>
-            <groupId>com.lee</groupId>
-            <artifactId>common</artifactId>
-        </dependency>
-
-        <dependency>
-            <groupId>com.lee</groupId>
-            <artifactId>ioc-aop</artifactId>
-        </dependency>
-
-        <dependency>
-            <groupId>com.lee</groupId>
+            <groupId>org.mybatis</groupId>
             <artifactId>mybatis</artifactId>
         </dependency>
 
         <dependency>
-            <groupId>io.netty</groupId>
-            <artifactId>netty-all</artifactId>
+            <groupId>mysql</groupId>
+            <artifactId>mysql-connector-java</artifactId>
         </dependency>
 
         <dependency>
-            <groupId>io.vertx</groupId>
-            <artifactId>vertx-web</artifactId>
+            <groupId>com.alibaba</groupId>
+            <artifactId>druid</artifactId>
         </dependency>
     </dependencies>
 

@@ -21,3 +21,35 @@ scanPackages:
 demo:
   conf:
     name: hello
+
+#mybatis配置文件
+mybatis:
+  cacheEnabled: true
+  useGeneratedKeys: true
+  defaultExecutorType: REUSE
+  logImpl: org.apache.ibatis.logging.slf4j.Slf4jImpl
+  mappers:
+    - com.lee.server.mapper
+
+#jdbc配置文件
+jdbc:
+  driver: com.mysql.jdbc.Driver
+  url: jdbc:mysql://127.0.0.1:3306/databaseName?useUnicode=true&characterEncoding=UTF8&autoReconnect=true
+  username: username
+  password: password
+  initialSize: 10
+  maxActive: 100
+  minIdle: 10
+  maxIdle: 10
+  maxWait: 3000
+  validationQuery: SELECT @@VERSION
+  validationQueryTimeoutSeconds: 5
+  testWhileIdle: true
+  testOnBorrow: true
+  testOnReturn: true
+  timeBetweenEvictionRunsMillis: 30000
+  minEvictableIdleTimeMillis: 600000
+  numTestsPerEvictionRun: 3
+  removeAbandoned: true
+  removeAbandonedTimeout: 180
+  defaultQueryTimeoutSeconds: 30

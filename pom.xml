@@ -14,6 +14,7 @@
         <module>http-server</module>
         <module>common</module>
         <module>demo</module>
+        <module>mybatis</module>
     </modules>
 
     <properties>
@@ -27,6 +28,9 @@
         <logback.version>1.2.3</logback.version>
         <cglib.version>3.2.10</cglib.version>
         <vertx.version>3.6.3</vertx.version>
+        <mybatis.version>3.5.0</mybatis.version>
+        <mysql.version>5.1.47</mysql.version>
+        <druid.version>1.1.14</druid.version>
     </properties>
 
     <dependencyManagement>
@@ -46,6 +50,12 @@
             <dependency>
                 <groupId>com.lee</groupId>
                 <artifactId>http-server</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>com.lee</groupId>
+                <artifactId>mybatis</artifactId>
                 <version>${project.version}</version>
             </dependency>
 
@@ -75,6 +85,26 @@
                 <groupId>io.vertx</groupId>
                 <artifactId>vertx-web</artifactId>
                 <version>${vertx.version}</version>
+            </dependency>
+
+            <!-- https://mvnrepository.com/artifact/org.mybatis/mybatis -->
+            <dependency>
+                <groupId>org.mybatis</groupId>
+                <artifactId>mybatis</artifactId>
+                <version>${mybatis.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>mysql</groupId>
+                <artifactId>mysql-connector-java</artifactId>
+                <version>${mysql.version}</version>
+            </dependency>
+
+            <!-- https://mvnrepository.com/artifact/com.alibaba/druid -->
+            <dependency>
+                <groupId>com.alibaba</groupId>
+                <artifactId>druid</artifactId>
+                <version>${druid.version}</version>
             </dependency>
 
         </dependencies>
@@ -133,6 +163,7 @@
                 <directory>src/main/resources</directory>
                 <includes>
                     <include>*.*</include>
+                    <include>**/*.xml</include>
                 </includes>
             </resource>
         </resources>

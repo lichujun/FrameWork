@@ -6,6 +6,7 @@ import com.lee.http.conf.ServerConf;
 import com.lee.http.conf.ServerConfiguration;
 import com.lee.http.utils.TraceIDUtils;
 import com.lee.iocaop.core.IocAppContext;
+import com.lee.mybatis.core.SqlSessionFactoryUtil;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -46,6 +47,8 @@ public class ApplicationContext {
             JSONObject yamlJson = context.init(configuration.getScanPath(),
                     configuration.getScanPackage(),
                     configuration.getBootClass());
+            // 初始化mybatis
+            SqlSessionFactoryUtil.init(yamlJson);
             // 设置服务器的配置文件
             ServerConf serverConf;
             try {

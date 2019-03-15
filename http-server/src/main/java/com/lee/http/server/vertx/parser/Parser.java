@@ -1,6 +1,6 @@
 package com.lee.http.server.vertx.parser;
 
-import java.lang.reflect.Type;
+import com.lee.http.bean.MethodParam;
 
 /**
  * @author lichujun
@@ -8,5 +8,5 @@ import java.lang.reflect.Type;
  */
 public interface Parser {
 
-    Object parse(Type type, String body);
+    Object parse(MethodParam methodParam, String body);
 }

@@ -1,8 +1,7 @@
 package com.lee.http.utils;
 
+import com.lee.http.bean.MethodParam;
 import org.apache.commons.lang3.StringUtils;
-
-import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -14,7 +13,7 @@ import java.util.Optional;
  */
 public class ParseParamUtils {
 
-    public static List<Object> parse(Map<String, Type> paramClassMap,
+    public static List<Object> parse(Map<String, MethodParam> paramClassMap,
                                       Map<String, String> paramMap) {
         List<Object> paramList = new ArrayList<>();
         try {
@@ -32,16 +31,17 @@ public class ParseParamUtils {
      * 获取参数的对象
      * @param paramMap 参数Map
      * @param paramName 参数名称
-     * @param type 参数类型
+     * @param methodParam 参数类型
      * @return 参数对象
      */
     private static Object getParamObject(Map<String, String> paramMap,
                                          String paramName,
-                                         Type type) {
+                                         MethodParam methodParam) {
         return Optional.ofNullable(paramName)
                 .map(paramMap::get)
                 .filter(StringUtils::isNotBlank)
-                .map(it -> InvokeControllerUtils.convert(it, type))
+                .map(it -> CastUtils.convert(it, methodParam.getType(),
+                        methodParam.getParamClass()))
                 .orElse(null);
     }
 }

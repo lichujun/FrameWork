@@ -42,7 +42,7 @@ public class HelloController {
     public CommonResponse<Hello> test(@RequestParam("word") String word) {
         Hello h = new Hello();
         if (word == null) {
-            h.setWord(helloService.sayHello());
+            //h.setWord(helloService.sayHello());
         } else {
             h.setWord(word);
         }

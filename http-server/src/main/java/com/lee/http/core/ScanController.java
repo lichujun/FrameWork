@@ -3,6 +3,7 @@ package com.lee.http.core;
 import com.lee.http.annotation.RequestMapping;
 import com.lee.http.annotation.RequestParam;
 import com.lee.http.bean.ControllerInfo;
+import com.lee.http.bean.MethodParam;
 import com.lee.http.bean.PathInfo;
 import com.lee.http.bean.RequestMethod;
 import com.lee.http.server.vertx.verticle.EventLoopVerticle;
@@ -115,10 +116,10 @@ public class ScanController {
                     .map(RequestMapping::method)
                     .orElse(RequestMethod.GET);
             // 获取方法的参数
-            Map<String, Type> paramMap = Optional.ofNullable(method.getParameters())
+            Map<String, MethodParam> paramMap = Optional.ofNullable(method.getParameters())
                     .filter(ArrayUtils::isNotEmpty)
                     .map(parameters -> {
-                        Map<String, Type> params = new LinkedHashMap<>(8);
+                        Map<String, MethodParam> params = new LinkedHashMap<>(8);
                         for (Parameter parameter : parameters) {
                             String name = Optional.of(parameter)
                                     // 获取@RequestParam注入的值，参数名
@@ -128,7 +129,9 @@ public class ScanController {
                                     .orElse(StringUtils.uncapitalize(parameter.getType()
                                             .getSimpleName()));
                             Type type = parameter.getParameterizedType();
-                            Optional.ofNullable(params.put(name, type))
+                            Class<?> paramClass = parameter.getType();
+                            MethodParam methodParam = new MethodParam(paramClass, type);
+                            Optional.ofNullable(params.put(name, methodParam))
                                     .ifPresent(it -> {
                                         throw new RuntimeException(String.format(
                                                 "参数名称不能相同，发生错误的方法：%s.%s",
@@ -167,7 +170,7 @@ public class ScanController {
      */
     private void putControllerInfo(String httpPath, RequestMethod reqMethod,
                                    Class<?> tClass, Method method,
-                                   Map<String, Type> paramMap) {
+                                   Map<String, MethodParam> paramMap) {
         PathInfo pathInfo = new PathInfo(httpPath, reqMethod.toString());
         ControllerInfo controllerInfo = new ControllerInfo(tClass, method, paramMap);
         Optional.ofNullable(PATH_CONTROLLER.put(pathInfo, controllerInfo))

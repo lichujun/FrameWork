@@ -1,6 +1,7 @@
 package com.lee.http.server.vertx.verticle;
 
 import com.lee.http.bean.ControllerInfo;
+import com.lee.http.bean.MethodParam;
 import com.lee.http.bean.PathInfo;
 import com.lee.http.bean.RequestMethod;
 import com.lee.http.bean.enums.ContentType;
@@ -20,8 +21,6 @@ import io.vertx.ext.web.RoutingContext;
 import io.vertx.ext.web.handler.BodyHandler;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.MapUtils;
-
-import java.lang.reflect.Type;
 import java.util.*;
 
 /**
@@ -118,7 +117,7 @@ public class EventLoopVerticle extends AbstractVerticle {
         EventBus eb = vertx.eventBus();
         // event bus传递消息的路径
         String path = pathInfo.getHttpMethod() + pathInfo.getHttpPath();
-        Map<String, Type> paramMap = controllerInfo.getMethodParameter();
+        Map<String, MethodParam> paramMap = controllerInfo.getMethodParameter();
         // 入参为空，则无需解析请求参数
         if (MapUtils.isEmpty(paramMap)) {
             sendMessage(eb, path, null, rc);
@@ -138,11 +137,11 @@ public class EventLoopVerticle extends AbstractVerticle {
                 Parser parser = ContentType.getParser(contentType);
                 if (parser != null) {
                     String body = rc.getBodyAsString();
-                    Type type = paramMap.values().stream()
+                    MethodParam methodParam = paramMap.values().stream()
                             .findFirst()
                             .orElse(null);
-                    if (type != null) {
-                        paramList = Optional.ofNullable(parser.parse(type, body))
+                    if (methodParam != null) {
+                        paramList = Optional.ofNullable(parser.parse(methodParam, body))
                                 .map(Collections::singletonList)
                                 .orElse(null);
                     }

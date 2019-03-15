@@ -1,8 +1,8 @@
 package com.lee.http.server.vertx.parser;
 
-import com.lee.http.utils.InvokeControllerUtils;
+import com.lee.http.bean.MethodParam;
+import com.lee.http.utils.CastUtils;
 import org.apache.commons.lang3.StringUtils;
-import java.lang.reflect.Type;
 import java.util.Optional;
 
 /**
@@ -12,12 +12,13 @@ import java.util.Optional;
 public class JsonParser implements Parser {
 
     @Override
-    public Object parse(Type type, String body) {
-        if (type != null) {
+    public Object parse(MethodParam methodParam, String body) {
+        if (methodParam != null) {
             try {
                 return Optional.ofNullable(body)
                         .filter(StringUtils::isNotBlank)
-                        .map(it -> InvokeControllerUtils.convert(it, type))
+                        .map(it -> CastUtils.convert(it, methodParam.getType(),
+                                methodParam.getParamClass()))
                         .orElse(null);
             } catch (Throwable e) {
                 return null;

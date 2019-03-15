@@ -5,6 +5,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.lang.reflect.Method;
+import java.lang.reflect.Type;
 import java.util.Map;
 
 /**
@@ -30,5 +31,5 @@ public class ControllerInfo {
     /**
      * 方法的参数
      */
-    private Map<String, Class<?>> methodParameter;
+    private Map<String, Type> methodParameter;
 }

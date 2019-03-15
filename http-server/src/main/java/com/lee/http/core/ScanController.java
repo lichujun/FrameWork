@@ -14,6 +14,7 @@ import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
+import java.lang.reflect.Type;
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -114,10 +115,10 @@ public class ScanController {
                     .map(RequestMapping::method)
                     .orElse(RequestMethod.GET);
             // 获取方法的参数
-            Map<String, Class<?>> paramMap = Optional.ofNullable(method.getParameters())
+            Map<String, Type> paramMap = Optional.ofNullable(method.getParameters())
                     .filter(ArrayUtils::isNotEmpty)
                     .map(parameters -> {
-                        Map<String, Class<?>> params = new LinkedHashMap<>(8);
+                        Map<String, Type> params = new LinkedHashMap<>(8);
                         for (Parameter parameter : parameters) {
                             String name = Optional.of(parameter)
                                     // 获取@RequestParam注入的值，参数名
@@ -126,8 +127,8 @@ public class ScanController {
                                     .filter(StringUtils::isNotBlank)
                                     .orElse(StringUtils.uncapitalize(parameter.getType()
                                             .getSimpleName()));
-                            Class<?> paramClass = parameter.getType();
-                            Optional.ofNullable(params.put(name, paramClass))
+                            Type type = parameter.getParameterizedType();
+                            Optional.ofNullable(params.put(name, type))
                                     .ifPresent(it -> {
                                         throw new RuntimeException(String.format(
                                                 "参数名称不能相同，发生错误的方法：%s.%s",
@@ -166,7 +167,7 @@ public class ScanController {
      */
     private void putControllerInfo(String httpPath, RequestMethod reqMethod,
                                    Class<?> tClass, Method method,
-                                   Map<String, Class<?>> paramMap) {
+                                   Map<String, Type> paramMap) {
         PathInfo pathInfo = new PathInfo(httpPath, reqMethod.toString());
         ControllerInfo controllerInfo = new ControllerInfo(tClass, method, paramMap);
         Optional.ofNullable(PATH_CONTROLLER.put(pathInfo, controllerInfo))

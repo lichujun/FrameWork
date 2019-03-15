@@ -20,7 +20,7 @@ import java.util.concurrent.*;
  * @date 2018/12/11 10:39 PM
  */
 @Slf4j
-@Controller
+//@Controller
 public class HelloController {
 
     private static final ExecutorService ES = new ThreadPoolExecutor(8, 16,

@@ -17,6 +17,8 @@ import io.vertx.ext.web.RoutingContext;
 import io.vertx.ext.web.handler.BodyHandler;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.MapUtils;
+
+import java.lang.reflect.Type;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
@@ -113,7 +115,7 @@ public class EventLoopVerticle extends AbstractVerticle {
         EventBus eb = vertx.eventBus();
         // event bus传递消息的路径
         String path = pathInfo.getHttpMethod() + pathInfo.getHttpPath();
-        Map<String, Class<?>> paramMap = controllerInfo.getMethodParameter();
+        Map<String, Type> paramMap = controllerInfo.getMethodParameter();
         // 入参为空，则无需解析请求参数
         if (MapUtils.isEmpty(paramMap)) {
             sendMessage(eb, path, null, rc);

@@ -12,7 +12,7 @@ import java.util.Optional;
  * @author lichujun
  * @date 2019/2/17 10:40 AM
  */
-@Controller
+//@Controller
 public class BookController {
 
     @RequestMapping("/book")

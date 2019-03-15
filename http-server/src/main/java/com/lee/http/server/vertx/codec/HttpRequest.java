@@ -1,15 +1,13 @@
 package com.lee.http.server.vertx.codec;
 
-import lombok.Builder;
+import lombok.AllArgsConstructor;
 import lombok.Data;
 
-import java.util.Map;
+import java.util.List;
 
 @Data
-@Builder
+@AllArgsConstructor
 public class HttpRequest {
 
-    private Map<String, String> params;
-    private String body;
-
+    private List<Object> paramList;
 }

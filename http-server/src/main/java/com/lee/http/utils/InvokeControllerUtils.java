@@ -42,6 +42,28 @@ public class InvokeControllerUtils {
     /**
      * 调用controller的方法
      * @param controllerInfo controller的信息
+     * @param paramList 参数集合
+     * @return 返回报文
+     */
+    public static Object invokeController(ControllerInfo controllerInfo, List<Object> paramList) throws Throwable {
+        Object controller = IocAppContext.getInstance()
+                .getBean(controllerInfo.getControllerClass());
+        Method method = controllerInfo.getInvokeMethod();
+        method.setAccessible(true);
+        Map<String, Type> paramClassMap = controllerInfo.getMethodParameter();
+        if (MapUtils.isEmpty(paramClassMap)) {
+            return invokeController(controllerInfo);
+        }
+        try {
+            return method.invoke(controller, paramList.toArray());
+        } catch (InvocationTargetException e) {
+            throw e.getTargetException();
+        }
+    }
+
+    /**
+     * 调用controller的方法
+     * @param controllerInfo controller的信息
      * @param paramMap 参数Map
      * @return 返回报文
      */
@@ -121,7 +143,7 @@ public class InvokeControllerUtils {
      * @param value 值
      * @return 转换后的Object
      */
-    private static Object convert(String value, Type type) {
+    public static Object convert(String value, Type type) {
         try {
             return JSON.parseObject(value, type);
         } catch (Throwable e) {

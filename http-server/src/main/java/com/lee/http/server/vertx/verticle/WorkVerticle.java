@@ -15,8 +15,9 @@ import io.vertx.core.eventbus.Message;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.StringUtils;
+
 import java.lang.reflect.Method;
-import java.util.Map;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -68,14 +69,11 @@ public class WorkVerticle extends AbstractVerticle {
                     Optional<HttpRequest> httpRequest = Optional.of(message)
                             .map(Message::body)
                             .map(it -> (HttpRequest) it);
-                    Map<String, String> params = httpRequest.map(HttpRequest::getParams)
+                    List<Object> paramList = httpRequest.map(HttpRequest::getParamList)
                             .orElse(null);
-                    String request = httpRequest.map(HttpRequest::getBody)
-                            .orElse(null);
-                    String reqJson = StringUtils.deleteWhitespace(request);
                     log.info("请求路径：【{}】，请求参数：【{}】", path.getHttpPath(),
-                            MapUtils.isEmpty(params) ? reqJson : params);
-                    res = InvokeControllerUtils.invokeController(controller, params, reqJson);
+                            JSON.toJSONString(paramList));
+                    res = InvokeControllerUtils.invokeController(controller, paramList);
                 }
                 httpResponse = HttpResponse.<String>builder()
                         .status(HttpResponseStatus.OK)

@@ -14,7 +14,7 @@ import java.util.List;
 @Controller
 public class TestController {
 
-    @RequestMapping("/")
+    @RequestMapping("/demo1")
     public List<People> test(List<People> peopleList) {
         peopleList.forEach(p -> System.out.println(p.getName()));
         return peopleList;

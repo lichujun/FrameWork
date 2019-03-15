@@ -3,11 +3,14 @@ package com.lee.http.server.vertx.verticle;
 import com.lee.http.bean.ControllerInfo;
 import com.lee.http.bean.PathInfo;
 import com.lee.http.bean.RequestMethod;
+import com.lee.http.bean.enums.ContentType;
 import com.lee.http.core.ScanController;
 import com.lee.http.server.vertx.VertxWebServer;
 import com.lee.http.server.vertx.codec.HttpRequest;
 import com.lee.http.server.vertx.codec.HttpResponse;
+import com.lee.http.server.vertx.parser.Parser;
 import com.lee.http.utils.AsyncResultUtils;
+import com.lee.http.utils.ParseParamUtils;
 import io.netty.handler.codec.http.HttpMethod;
 import io.netty.handler.codec.http.HttpResponseStatus;
 import io.vertx.core.AbstractVerticle;
@@ -15,20 +18,17 @@ import io.vertx.core.eventbus.EventBus;
 import io.vertx.ext.web.Router;
 import io.vertx.ext.web.RoutingContext;
 import io.vertx.ext.web.handler.BodyHandler;
-import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.MapUtils;
 
 import java.lang.reflect.Type;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 
 /**
  * event loop
  * @author lichujun
  * @date 2019/2/20 7:35 PM
  */
-@Slf4j
 public class EventLoopVerticle extends AbstractVerticle {
 
     private Router router;
@@ -95,14 +95,17 @@ public class EventLoopVerticle extends AbstractVerticle {
         eb.send(path, msg, res -> {
             HttpResponse<String> httpResponse = AsyncResultUtils.transResponse(res);
             if (HttpResponseStatus.OK.equals(httpResponse.getStatus())) {
-                rc.response().putHeader("Content-type", "text/plain;charset=UTF-8")
+                rc.response()
+                        .putHeader("Content-type", "text/plain;charset=UTF-8")
                         .end(httpResponse.getResponse());
             } else {
                 HttpResponseStatus status = httpResponse.getStatus();
                 if (status == null) {
                     status = HttpResponseStatus.INTERNAL_SERVER_ERROR;
                 }
-                rc.response().setStatusCode(status.code()).end();
+                rc.response()
+                        .setStatusCode(status.code())
+                        .end();
             }
         });
     }
@@ -122,7 +125,7 @@ public class EventLoopVerticle extends AbstractVerticle {
             return;
         }
         final Map<String, String> params = new HashMap<>();
-        String body = null;
+        List<Object> paramList = null;
         // 获取请求参数
         if (RequestMethod.POST.equals(requestMethod)) {
             for (String param : paramMap.keySet()) {
@@ -131,18 +134,38 @@ public class EventLoopVerticle extends AbstractVerticle {
             }
             // 获取body
             if (MapUtils.isEmpty(params) && paramMap.size() == 1) {
-                body = rc.getBodyAsString();
+                String contentType = rc.request().getHeader("Content-Type");
+                Parser parser = ContentType.getParser(contentType);
+                if (parser != null) {
+                    String body = rc.getBodyAsString();
+                    Type type = paramMap.values().stream()
+                            .findFirst()
+                            .orElse(null);
+                    if (type != null) {
+                        paramList = Optional.ofNullable(parser.parse(type, body))
+                                .map(Collections::singletonList)
+                                .orElse(null);
+                    }
+                }
+            } else {
+                paramList = ParseParamUtils.parse(controllerInfo.getMethodParameter(), params);
             }
         } else if (RequestMethod.GET.equals(requestMethod)){
             for (String param : paramMap.keySet()) {
                 Optional.ofNullable(rc.request().getParam(param))
                         .ifPresent(it -> params.put(param, it));
             }
+            if (MapUtils.isNotEmpty(params)) {
+                paramList = ParseParamUtils.parse(controllerInfo.getMethodParameter(), params);
+            }
         }
-        HttpRequest httpRequest = HttpRequest.builder()
-                .params(params)
-                .body(body)
-                .build();
+        if (CollectionUtils.isEmpty(paramList)) {
+            rc.response()
+                    .setStatusCode(HttpResponseStatus.BAD_REQUEST.code())
+                    .end();
+            return;
+        }
+        HttpRequest httpRequest = new HttpRequest(paramList);
         sendMessage(eb, path, httpRequest, rc);
     }
 

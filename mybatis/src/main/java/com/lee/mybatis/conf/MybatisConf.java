@@ -5,6 +5,8 @@ import org.apache.ibatis.session.ExecutorType;
 
 import java.util.List;
 
+import static org.apache.ibatis.session.ExecutorType.REUSE;
+
 /**
  * @author lichujun
  * @date 2019/3/14 14:19
@@ -12,13 +14,13 @@ import java.util.List;
 
 @Data
 public class MybatisConf {
-    private Boolean cacheEnabled;
+    private Boolean cacheEnabled = true;
 
-    private Boolean useGeneratedKeys;
+    private Boolean useGeneratedKeys = true;
 
-    private ExecutorType defaultExecutorType;
+    private ExecutorType defaultExecutorType = REUSE;
 
-    private String logImpl;
+    private String logImpl = "org.apache.ibatis.logging.slf4j.Slf4jImpl";
 
     private List<String> mappers;
 }

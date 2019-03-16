@@ -31,10 +31,6 @@ public class VertxWebServer implements WebServer {
         // 设置event bus编解码，用于event-loop解析work-verticle通过event bus传递的数据
         vertx.eventBus().registerDefaultCodec(HttpResponse.class, new HttpResponseCodec());
 
-        // 启动event loop线程组
-        vertx.deployVerticle(EventLoopVerticle.class, new DeploymentOptions()
-                .setInstances(CONF.getBossThread()));
-
         // 启动work-verticle线程组
         vertx.deployVerticle(WorkVerticle.class, new DeploymentOptions()
                 .setWorker(true)
@@ -42,6 +38,11 @@ public class VertxWebServer implements WebServer {
                 .setWorkerPoolName("work-pool")
                 .setMaxWorkerExecuteTimeUnit(TimeUnit.SECONDS)
                 .setMaxWorkerExecuteTime(20));
+
+        // 启动event loop线程组
+        vertx.deployVerticle(EventLoopVerticle.class, new DeploymentOptions()
+                .setInstances(CONF.getBossThread()));
+
 
         log.info("服务启动成功");
     }

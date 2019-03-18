@@ -272,13 +272,13 @@ public class BeanFactoryImpl implements BeanFactory {
      * 将配置文件的bean名称和实例对象注册到bean容器中
      * @param tClass 配置文件的类对象
      * @param t 配置文件对象
+     * @param value 注入配置的名称
      */
-    void injectConfiguration(Class<?> tClass, Object t) {
+    void injectConfiguration(Class<?> tClass, Object t, String value) {
         if (tClass == null || t == null) {
             return ;
         }
-        String classSimpleName = StringUtils.uncapitalize(tClass.getSimpleName());
-        if (BEAN_MAP.put(classSimpleName, t) != null) {
+        if (BEAN_MAP.put(value, t) != null) {
             throw new RuntimeException(tClass + "配置文件的类名存在相同的，注入配置文件失败");
         }
     }
@@ -286,8 +286,9 @@ public class BeanFactoryImpl implements BeanFactory {
     /**
      * 获取配置文件对象为空，将配置文件的bean名称和默认初始化对象注册到bean容器中
      * @param tClass 配置文件的类对象
+     * @param value 注入配置的名称
      */
-    void injectConfiguration(Class<?> tClass) {
+    void injectConfiguration(Class<?> tClass, String value) {
         if (tClass == null) {
             return ;
         }
@@ -297,10 +298,18 @@ public class BeanFactoryImpl implements BeanFactory {
         } catch (Exception e) {
             throw new RuntimeException(tClass + "注入配置文件失败");
         }
-        String classSimpleName = StringUtils.uncapitalize(tClass.getSimpleName());
-        if (BEAN_MAP.put(classSimpleName, obj) != null) {
+        if (BEAN_MAP.put(value, obj) != null) {
             throw new RuntimeException(tClass + "配置文件的bean名称存在相同的，注入配置文件失败");
         }
+    }
+
+    /**
+     * 获取配置文件对象为空，将配置文件的bean名称和默认初始化对象注册到bean容器中
+     * @param tClass 配置文件的类对象
+     */
+    void injectConfiguration(Class<?> tClass) {
+        String classSimpleName = StringUtils.uncapitalize(tClass.getSimpleName());
+        injectConfiguration(tClass, classSimpleName);
     }
 
     /**

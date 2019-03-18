@@ -69,6 +69,7 @@ public class HelloController {
 
     @RequestMapping(value = "/test", method = RequestMethod.GET)
     public CommonResponse<String> sayIt() {
+        log.info(demoConf.getName());
         return CommonResponse.buildOkRes("world sucks");
     }
 

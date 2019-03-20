@@ -6,6 +6,7 @@ import com.lee.http.core.ScanController;
 import com.lee.http.utils.InvokeControllerUtils;
 import com.lee.http.utils.TraceIDUtils;
 import com.lee.iocaop.core.IocAppContext;
+import com.lee.mybatis.utils.SqlSessionUtils;
 import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
@@ -99,6 +100,7 @@ public class NettyServerHandler extends SimpleChannelInboundHandler<HttpRequest>
                 status = HttpResponseStatus.INTERNAL_SERVER_ERROR;
             }
         } finally {
+            SqlSessionUtils.remove();
             // 移除traceID，防止内存泄露
             TraceIDUtils.removeTraceID();
         }

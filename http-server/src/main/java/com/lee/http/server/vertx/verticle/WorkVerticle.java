@@ -9,6 +9,7 @@ import com.lee.http.server.vertx.codec.HttpResponse;
 import com.lee.http.utils.InvokeControllerUtils;
 import com.lee.http.utils.TraceIDUtils;
 import com.lee.iocaop.core.IocAppContext;
+import com.lee.mybatis.utils.SqlSessionUtils;
 import io.netty.handler.codec.http.HttpResponseStatus;
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.eventbus.Message;
@@ -87,6 +88,7 @@ public class WorkVerticle extends AbstractVerticle {
                         .orElse(null);
                 message.reply(httpResponse);
                 log.info("请求出参：【{}】", resStr);
+                SqlSessionUtils.remove();
                 // 防止ThreadLocal内存泄露
                 TraceIDUtils.removeTraceID();
             }

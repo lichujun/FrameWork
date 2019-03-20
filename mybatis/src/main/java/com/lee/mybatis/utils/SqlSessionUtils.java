@@ -1,6 +1,6 @@
 package com.lee.mybatis.utils;
 
-import com.lee.mybatis.core.SqlSessionFactoryUtil;
+import com.lee.mybatis.core.MybatisContext;
 import org.apache.ibatis.session.SqlSession;
 
 /**
@@ -19,7 +19,7 @@ public class SqlSessionUtils {
     private static SqlSession getSqlSession() {
         SqlSession sqlSessionLocal = SQL_SESSION_LOCAL.get();
         if (sqlSessionLocal == null) {
-            SqlSession newSqlSession = SqlSessionFactoryUtil.getSqlSession();
+            SqlSession newSqlSession = MybatisContext.getSqlSession();
             SQL_SESSION_LOCAL.set(newSqlSession);
             return newSqlSession;
         }

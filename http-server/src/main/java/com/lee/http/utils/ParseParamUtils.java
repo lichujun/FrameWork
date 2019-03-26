@@ -17,10 +17,13 @@ public class ParseParamUtils {
                                       Map<String, String> paramMap) {
         List<Object> paramList = new ArrayList<>();
         try {
-            paramClassMap.forEach((paramName, type) -> {
-                Object param = getParamObject(paramMap, paramName, type);
+            for (Map.Entry<String, MethodParam> entry : paramClassMap.entrySet()) {
+                Object param = getParamObject(paramMap, entry.getKey(), entry.getValue());
+                if (param == null) {
+                    return null;
+                }
                 paramList.add(param);
-            });
+            }
         } catch (Throwable e) {
             return null;
         }

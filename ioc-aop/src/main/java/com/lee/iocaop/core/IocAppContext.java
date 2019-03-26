@@ -363,7 +363,7 @@ public class IocAppContext extends BeanFactoryImpl {
             log.warn("获取【{}】的配置文件失败", value, e);
         }
         if (confObj != null) {
-            injectConfiguration(tClass, confObj);
+            injectConfiguration(tClass, confObj, value);
         } else {
             injectConfiguration(tClass);
         }

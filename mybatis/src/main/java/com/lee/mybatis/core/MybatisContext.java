@@ -23,7 +23,7 @@ import java.util.Optional;
  * @date 2019/3/14 14:29
  */
 @Slf4j
-public class SqlSessionFactoryUtil {
+public class MybatisContext {
 
     /**
      * 会话工厂
@@ -33,7 +33,7 @@ public class SqlSessionFactoryUtil {
     /**
      * 构造器注入
      */
-    private SqlSessionFactoryUtil() {
+    private MybatisContext() {
     }
 
     /**

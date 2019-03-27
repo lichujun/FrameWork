@@ -2,7 +2,6 @@ package com.lee.http.bean;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
-import lombok.NoArgsConstructor;
 
 /**
  * @author lichujun

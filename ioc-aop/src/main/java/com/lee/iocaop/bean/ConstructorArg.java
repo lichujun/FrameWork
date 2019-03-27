@@ -2,7 +2,6 @@ package com.lee.iocaop.bean;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
-import lombok.ToString;
 
 /**
  * @author lichujun

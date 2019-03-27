@@ -8,18 +8,17 @@ import lombok.NoArgsConstructor;
  * @author lichujun
  * @date 2018/12/13 11:36 PM
  */
-@NoArgsConstructor
 @AllArgsConstructor
 @Data
-public class PathInfo {
+public final class PathInfo {
 
     /**
      * http请求路径
      */
-    private String httpPath;
+    private final String httpPath;
 
     /**
      * 处理http请求的方法
      */
-    private String httpMethod;
+    private final String httpMethod;
 }

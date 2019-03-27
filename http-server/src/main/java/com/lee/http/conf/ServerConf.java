@@ -1,7 +1,7 @@
 package com.lee.http.conf;
 
 
-import com.lee.http.bean.ServerEnums;
+import com.lee.http.bean.enums.ServerEnums;
 
 import java.util.Optional;
 

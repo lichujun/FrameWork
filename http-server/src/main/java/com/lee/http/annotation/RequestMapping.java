@@ -1,6 +1,6 @@
 package com.lee.http.annotation;
 
-import com.lee.http.bean.RequestMethod;
+import com.lee.http.bean.enums.RequestMethod;
 
 import java.lang.annotation.*;
 

@@ -1,5 +1,6 @@
 package com.lee.iocaop.bean;
 
+import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.ToString;
 
@@ -8,15 +9,11 @@ import lombok.ToString;
  * @date 2018/12/8 11:20
  */
 @Data
-@ToString
-public class ConstructorArg {
+@AllArgsConstructor
+public final class ConstructorArg {
 
-    private String ref;
+    private final String ref;
 
-    private String className;
+    private final String className;
 
-    public ConstructorArg(String ref, String className) {
-        this.ref = ref;
-        this.className = className;
-    }
 }

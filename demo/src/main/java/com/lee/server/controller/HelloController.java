@@ -2,7 +2,7 @@ package com.lee.server.controller;
 
 import com.lee.http.annotation.RequestMapping;
 import com.lee.http.annotation.RequestParam;
-import com.lee.http.bean.RequestMethod;
+import com.lee.http.bean.enums.RequestMethod;
 import com.lee.http.utils.TraceIDUtils;
 import com.lee.iocaop.annotation.Controller;
 import com.lee.iocaop.annotation.Resource;

@@ -1,5 +1,6 @@
 package com.lee.iocaop.bean;
 
+import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.ToString;
 
@@ -10,23 +11,15 @@ import java.util.List;
  * @date 2018/12/8 11:15
  */
 @Data
-@ToString
-public class BeanDefinition {
+@AllArgsConstructor
+public final class BeanDefinition {
 
     /** 实例名称 */
-    private String name;
+    private final String name;
     /** class名称 */
-    private String className;
+    private final String className;
     /** 实例实现的接口 */
-    private List<String> interfaces;
+    private final List<String> interfaces;
     /** 构造函数的传参 */
-    private List<ConstructorArg> constructorArgs;
-
-    public BeanDefinition(String name, String className, List<String> interfaces,
-                          List<ConstructorArg> constructorArgs) {
-        this.name = name;
-        this.className = className;
-        this.interfaces = interfaces;
-        this.constructorArgs = constructorArgs;
-    }
+    private final List<ConstructorArg> constructorArgs;
 }

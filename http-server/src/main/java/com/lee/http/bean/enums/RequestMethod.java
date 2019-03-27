@@ -1,4 +1,4 @@
-package com.lee.http.bean;
+package com.lee.http.bean.enums;
 
 /**
  * @author lichujun

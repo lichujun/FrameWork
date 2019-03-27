@@ -11,9 +11,9 @@ import java.lang.reflect.Method;
  */
 @Data
 @AllArgsConstructor
-public class AspectMethod {
+public final class AspectMethod {
     // @Aspect标注的类的bean对象
-    private Object object;
+    private final Object object;
     // @Before或@After标注下的方法
-    private Method method;
+    private final Method method;
 }

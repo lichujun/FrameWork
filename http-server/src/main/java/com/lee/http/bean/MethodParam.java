@@ -11,9 +11,9 @@ import java.lang.reflect.Type;
  */
 @Data
 @AllArgsConstructor
-public class MethodParam {
+public final class MethodParam {
 
-    private Class<?> paramClass;
+    private final Class<?> paramClass;
 
-    private Type type;
+    private final Type type;
 }

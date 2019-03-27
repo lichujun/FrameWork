@@ -1,4 +1,4 @@
-package com.lee.http.bean;
+package com.lee.http.bean.enums;
 
 import com.lee.http.server.WebServer;
 import com.lee.http.server.netty.NettyWebServer;

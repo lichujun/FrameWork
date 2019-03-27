@@ -3,7 +3,7 @@ package com.lee.http.server.vertx.verticle;
 import com.lee.http.bean.ControllerInfo;
 import com.lee.http.bean.MethodParam;
 import com.lee.http.bean.PathInfo;
-import com.lee.http.bean.RequestMethod;
+import com.lee.http.bean.enums.RequestMethod;
 import com.lee.http.bean.enums.ContentType;
 import com.lee.http.core.ScanController;
 import com.lee.http.server.vertx.VertxWebServer;

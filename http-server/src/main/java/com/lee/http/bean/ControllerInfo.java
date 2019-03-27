@@ -13,21 +13,20 @@ import java.util.Map;
 
 @Data
 @AllArgsConstructor
-@NoArgsConstructor
-public class ControllerInfo {
+public final class ControllerInfo {
 
     /**
      * Controller类
      */
-    private Class<?> controllerClass;
+    private final Class<?> controllerClass;
 
     /**
      * 执行的方法
      */
-    private Method invokeMethod;
+    private final Method invokeMethod;
 
     /**
      * 方法的参数
      */
-    private Map<String, MethodParam> methodParameter;
+    private final Map<String, MethodParam> methodParameter;
 }

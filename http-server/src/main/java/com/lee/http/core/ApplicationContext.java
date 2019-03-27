@@ -1,7 +1,7 @@
 package com.lee.http.core;
 
 import com.alibaba.fastjson.JSONObject;
-import com.lee.http.bean.ServerEnums;
+import com.lee.http.bean.enums.ServerEnums;
 import com.lee.http.conf.ServerConf;
 import com.lee.http.conf.ServerConfiguration;
 import com.lee.http.utils.TraceIDUtils;

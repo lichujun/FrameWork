@@ -26,8 +26,8 @@ public class EventAop {
     @Before(className = "com.lee.server.controller.HelloController", methodName = "test")
     public void beforeTest(String hello) throws Exception {
         log.info(hello);
-        //throw new BusinessException("I just play");
-        //log.info("hello, you know, world sucks！");
+        log.info("hello, you know, world sucks！");
+        throw new BusinessException("I just play");
     }
 
     @After(className = "com.lee.server.controller.HelloController")

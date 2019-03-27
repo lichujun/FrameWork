@@ -5,7 +5,7 @@ import com.lee.http.annotation.RequestParam;
 import com.lee.http.bean.ControllerInfo;
 import com.lee.http.bean.MethodParam;
 import com.lee.http.bean.PathInfo;
-import com.lee.http.bean.RequestMethod;
+import com.lee.http.bean.enums.RequestMethod;
 import com.lee.http.server.vertx.verticle.EventLoopVerticle;
 import com.lee.http.server.vertx.verticle.WorkVerticle;
 import com.lee.iocaop.annotation.Controller;

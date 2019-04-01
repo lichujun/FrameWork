@@ -15,6 +15,7 @@
         <module>common</module>
         <module>demo</module>
         <module>mybatis</module>
+        <module>rpc</module>
     </modules>
 
     <properties>

@@ -1,5 +1,6 @@
 package com.lee.rpc.bean.enums;
 
+import com.lee.rpc.constants.RPCResponseConstants;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 
@@ -12,7 +13,7 @@ import lombok.Getter;
 @AllArgsConstructor
 public enum RPCResponseType {
 
-    SUCCESS(0, "请求成功"),
+    SUCCESS(0, RPCResponseConstants.OK),
 
     ;
 

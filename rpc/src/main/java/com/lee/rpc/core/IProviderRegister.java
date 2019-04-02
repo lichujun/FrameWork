@@ -1,4 +1,4 @@
-package com.lee.rpc.core.provider;
+package com.lee.rpc.core;
 
 /**
  * 服务注册接口

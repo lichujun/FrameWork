@@ -1,4 +1,4 @@
-package com.lee.rpc.core.comsumer;
+package com.lee.rpc.core;
 
 import java.util.List;
 
@@ -7,7 +7,7 @@ import java.util.List;
  * @author lichujun
  * @date 2019/3/30 17:40
  */
-public interface IComsumerDiscovery {
+public interface IProviderDiscovery {
 
     List<String> discovery();
 }

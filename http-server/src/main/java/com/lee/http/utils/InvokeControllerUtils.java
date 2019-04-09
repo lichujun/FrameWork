@@ -46,17 +46,11 @@ public class InvokeControllerUtils {
     public static Object invokeController(ControllerInfo controllerInfo, List<Object> paramList) throws Throwable {
         Object controller = IocAppContext.getInstance()
                 .getBean(controllerInfo.getControllerClass());
-        Method method = controllerInfo.getInvokeMethod();
-        method.setAccessible(true);
         Map<String, MethodParam> paramClassMap = controllerInfo.getMethodParameter();
         if (MapUtils.isEmpty(paramClassMap)) {
             return invokeController(controllerInfo);
         }
-        try {
-            return method.invoke(controller, paramList.toArray());
-        } catch (InvocationTargetException e) {
-            throw e.getTargetException();
-        }
+        return invokeControllerMethod(controllerInfo, controller, paramList);
     }
 
     /**
@@ -70,8 +64,6 @@ public class InvokeControllerUtils {
                                           String reqJson) throws Throwable {
         Object controller = IocAppContext.getInstance()
                 .getBean(controllerInfo.getControllerClass());
-        Method method = controllerInfo.getInvokeMethod();
-        method.setAccessible(true);
         Map<String, MethodParam> paramClassMap = controllerInfo.getMethodParameter();
         if (MapUtils.isEmpty(paramClassMap)) {
             return invokeController(controllerInfo);
@@ -103,11 +95,19 @@ public class InvokeControllerUtils {
                     paramList.add(param);
                 });
             }
-            try {
-                return method.invoke(controller, paramList.toArray());
-            } catch (InvocationTargetException e) {
-                throw e.getTargetException();
-            }
+            return invokeControllerMethod(controllerInfo, controller, paramList);
+        }
+    }
+
+    private static Object invokeControllerMethod(ControllerInfo controllerInfo,
+                                                 Object controller,
+                                                 List<Object> paramList) throws Throwable {
+        try {
+            Method method = controllerInfo.getInvokeMethod();
+            method.setAccessible(true);
+            return method.invoke(controller, paramList.toArray());
+        } catch (InvocationTargetException e) {
+            throw e.getTargetException();
         }
     }
 

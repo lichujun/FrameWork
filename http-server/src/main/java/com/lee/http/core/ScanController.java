@@ -116,31 +116,27 @@ public class ScanController {
                     .map(RequestMapping::method)
                     .orElse(RequestMethod.GET);
             // 获取方法的参数
-            Map<String, MethodParam> paramMap = Optional.ofNullable(method.getParameters())
-                    .filter(ArrayUtils::isNotEmpty)
-                    .map(parameters -> {
-                        Map<String, MethodParam> params = new LinkedHashMap<>(8);
-                        for (Parameter parameter : parameters) {
-                            String name = Optional.of(parameter)
-                                    // 获取@RequestParam注入的值，参数名
-                                    .map(it -> it.getDeclaredAnnotation(RequestParam.class))
-                                    .map(RequestParam::value)
-                                    .filter(StringUtils::isNotBlank)
-                                    .orElse(StringUtils.uncapitalize(parameter.getType()
-                                            .getSimpleName()));
-                            Type type = parameter.getParameterizedType();
-                            Class<?> paramClass = parameter.getType();
-                            MethodParam methodParam = new MethodParam(paramClass, type);
-                            Optional.ofNullable(params.put(name, methodParam))
-                                    .ifPresent(it -> {
-                                        throw new RuntimeException(String.format(
-                                                "参数名称不能相同，发生错误的方法：%s.%s",
-                                                tClass.getName(), method.getName()));
-                                    });
-                        }
-                        return params;
-                    })
-                    .orElse(null);
+            Map<String, MethodParam> paramMap = null;
+            if (ArrayUtils.isNotEmpty(method.getParameters())) {
+                paramMap = new LinkedHashMap<>(8);
+                for (Parameter parameter : method.getParameters()) {
+                    String name = Optional.of(parameter)
+                            // 获取@RequestParam注入的值，参数名
+                            .map(it -> it.getDeclaredAnnotation(RequestParam.class))
+                            .map(RequestParam::value)
+                            .filter(StringUtils::isNotBlank)
+                            .orElse(StringUtils.uncapitalize(parameter.getType()
+                                    .getSimpleName()));
+                    Type type = parameter.getParameterizedType();
+                    Class<?> paramClass = parameter.getType();
+                    MethodParam methodParam = new MethodParam(paramClass, type);
+                    if (paramMap.put(name, methodParam) != null) {
+                        throw new RuntimeException(String.format(
+                                "参数名称不能相同，发生错误的方法：%s.%s",
+                                tClass.getName(), method.getName()));
+                    }
+                }
+            }
             if (reqMethod == RequestMethod.ALL) {
                 for (RequestMethod reqMethodEnum : RequestMethod.values()) {
                     if (reqMethodEnum == RequestMethod.ALL) {

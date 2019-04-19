@@ -16,6 +16,7 @@ import io.netty.handler.codec.http.HttpMethod;
 import io.netty.handler.codec.http.HttpResponseStatus;
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.eventbus.EventBus;
+import io.vertx.core.http.HttpServerOptions;
 import io.vertx.ext.web.Router;
 import io.vertx.ext.web.RoutingContext;
 import io.vertx.ext.web.handler.BodyHandler;
@@ -40,7 +41,11 @@ public class EventLoopVerticle extends AbstractVerticle {
         scanController.routeMessage(this);
 
         // 监听端口
-        vertx.createHttpServer()
+        vertx.createHttpServer(new HttpServerOptions()
+                .setMaxWebsocketFrameSize(1024 * 1024 * 10)
+                .setCompressionSupported(true)
+                .setTcpKeepAlive(true)
+                .setReuseAddress(true))
                 .requestHandler(router)
                 .listen(VertxWebServer.CONF.getPort());
     }

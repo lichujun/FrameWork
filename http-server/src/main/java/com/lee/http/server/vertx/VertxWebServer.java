@@ -42,8 +42,5 @@ public class VertxWebServer implements WebServer {
         // 启动event loop线程组
         vertx.deployVerticle(EventLoopVerticle.class, new DeploymentOptions()
                 .setInstances(CONF.getBossThread()));
-
-
-        log.info("服务启动成功");
     }
 }
